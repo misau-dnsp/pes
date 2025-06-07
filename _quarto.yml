@@ -1,5 +1,9 @@
 project:
-  title: "dnsp"
-
-
-
+  type: default
+metadata-files:
+  - _brand.yml
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-title: "Conteúdo"

@@ -1,11 +1,187 @@
 ---
-title: "dnsp"
+title: "Direcção Nacional de Saúde Pública"
+subtitle: "Ministério da Saúde de Moçambique"
+execute:
+  echo: false
+  warning: false
 ---
 
-## Quarto
+```{r, results='hide'}
+library(tidyverse)
+library(ggthemes)
+library(robotoolbox)
+library(glamr)
+library(dm)
+library(haven)
+library(glue)
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+acct_kobo <- "kobo-jlara"
+acct_kobo_con <- get_account(name = acct_kobo)
 
-```{r}
-1 + 1
+kobo_token(username = acct_kobo_con$username,
+           password = acct_kobo_con$password,
+           url = acct_kobo_con$url)
+```
+
+
+# Sumário Executivo
+
+Como parte do Plano Económico e Social (PES) do ano 2026, a Direcção Nacional de Saúde Pública (DNSP) está a introduzir novas tecnologias para a recolha, análise e monitoria da execução das actividades planificadas. A intenção é automatizar vários processos na gestão dos dados do PES e, desta forma, melhorar a planificação e a execução em si.
+
+```{r load-kobo-data}
+assets <- kobo_asset_list()
+
+uid <- assets %>%
+  filter(name == "2026 DNSP PES") %>%
+  pull(uid) %>%
+  first()
+
+asset_list <- kobo_asset(uid)
+
+asset_df <- kobo_submissions(asset_list)
+
+```
+
+```{r munge-data}
+
+df_main <- asset_df$main
+
+n_activities <- nrow(df_main)
+
+df_tbl_dates <- asset_df$tbl_datas_impl
+
+df_gantt <- asset_df %>%
+  dm_flatten_to_tbl(.start = tbl_datas_impl,
+                    .join = left_join) %>% 
+  select(
+    responsavel_programa,
+    subactividade_tipo,
+    subactividade_descricao,
+    subactividade_data_inicio,
+    subactividade_data_fim
+  ) %>% 
+mutate(
+  responsavel_programa = str_to_upper(responsavel_programa),
+  data_inicio = subactividade_data_inicio,
+  subactividade_descricao_short = subactividade_descricao |> 
+    str_trunc(width = 100, ellipsis = "...") |> 
+    str_wrap(width = 50),
+  subactividade_descricao_short = factor(subactividade_descricao_short, levels = unique(subactividade_descricao_short))
+  ) %>% 
+  pivot_longer(
+    cols = contains("_data_"),
+    names_to = "data_tipo",
+    values_to = "data"
+  ) %>% 
+  arrange(responsavel_programa, desc(data_inicio)) %>%
+  mutate(
+    subactividade_descricao_short = factor(
+      subactividade_descricao_short,
+      levels = unique(subactividade_descricao_short)
+    )
+  )
+```
+
+Até à data de criação do presente relatório, o pessoal do programa DNSP apresentou informações para um total de `r n_activities` subactividades. 
+
+```{r plot-activity-gantt, fig.width=12, fig.align='center', fig.bg="transparent"}
+
+# plot activity gantt chart
+df_gantt_plot <- ggplot(df_gantt) +
+  geom_line(
+    aes(x = subactividade_descricao_short, y = data, color = responsavel_programa),
+    linewidth = 4,
+    lineend = "butt",
+    linejoin = "mitre"
+  ) +
+  scale_y_date(
+    date_breaks = "1 month",
+    date_labels = "%m-%Y"
+  ) +
+  coord_flip() +
+  facet_wrap(~ responsavel_programa, ncol = 1, scales = "free_y") +
+  theme_fivethirtyeight() +
+  labs(
+    title = "Cronograma de Actividades PES 2026 (DNSP)",
+    caption = "Fonte: KoboToolbox, DNSP 2026 PES",
+    x = NULL,
+    y = "Date"
+  ) +
+  theme(
+    plot.title = element_text(size = 14, face = "bold.italic", hjust = 0),
+    plot.caption = element_text(size = 12, hjust = 1, face = "italic"),
+    legend.position = "none",
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 12),
+    panel.spacing = unit(0.5, "lines"),
+    panel.grid.minor.x = element_blank(),
+    strip.background = element_rect(fill = "grey90", color = "grey20"),
+    strip.text = element_text(color = "grey20", 
+                              face = "bold", 
+                              size = 11,
+                              margin = margin(t = 3, b = 3)
+    )
+  )
+
+df_gantt_plot
+```
+
+
+## Destaques
+
+- Integração com o sistema **SISMA**
+- Visualização de dados com gráficos e tabelas
+- Relatórios automáticos com atualização contínua
+
+## Gráfico de Exemplo
+
+```{r  echo=FALSE, warning=FALSE}
+library(ggplot2)
+
+
+# Define the custom theme (if not sourcing from a file)
+misau_colors <- c(
+  "primary_red" = "#C8102E",
+  "health_green" = "#007A33",
+  "sun_yellow" = "#FFD100",
+  "sky_blue" = "#00ADEF",
+  "midnight_black" = "#1C2826",
+  "paper_white" = "#F2F2F2",
+  "corn_gold" = "#FFB81C",
+  "burnt_brown" = "#8B5E3C"
+)
+
+get_misau_color <- function(name) {
+  misau_colors[[name]]
+}
+
+theme_misau <- function(base_size = 12, base_family = "sans") {
+  theme_minimal(base_size = base_size, base_family = base_family) +
+    theme(
+      plot.background = element_rect(fill = get_misau_color("paper_white"), color = NA),
+      panel.background = element_rect(fill = get_misau_color("paper_white"), color = NA),
+      panel.grid.major = element_line(color = "#DDDDDD"),
+      panel.grid.minor = element_blank(),
+      axis.title = element_text(color = get_misau_color("midnight_black")),
+      axis.text = element_text(color = get_misau_color("midnight_black")),
+      plot.title = element_text(face = "bold", size = rel(1.2), color = get_misau_color("health_green")),
+      plot.subtitle = element_text(size = rel(1.1), color = get_misau_color("burnt_brown")),
+      plot.caption = element_text(size = rel(0.9), color = get_misau_color("midnight_black"))
+    )
+}
+
+# Sample data
+df <- data.frame(
+  indicador = c("Vacinação", "Pré-natal", "Partos Institucionais", "Visitas Domiciliares"),
+  valor = c(85, 73, 60, 90)
+)
+
+# Plot
+ggplot(df, aes(x = reorder(indicador, valor), y = valor, fill = indicador)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual(values = c("#007A33", "#C8102E", "#FFD100", "#00ADEF")) +
+  labs(title = "Cobertura de Serviços Essenciais",
+       x = NULL, y = "% de Cobertura") +
+  theme_misau()
 ```
