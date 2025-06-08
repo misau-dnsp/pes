@@ -41,8 +41,13 @@ asset_df <- kobo_submissions(asset_list)
 
 ```{r munge-data}
 
-columns_to_label <- c("responsavel_programa", "responsavel_pf_ma", "subactividade_tipo", "objectivo_especifico", "objectivo_pess")
-
+# create vector of vars where value to be substituted for label
+columns_to_label <- c("responsavel_programa", 
+                      "responsavel_pf_ma", 
+                      "subactividade_tipo", 
+                      "objectivo_especifico", 
+                      "objectivo_pess", 
+                      "subactividade_local")
 
 df_main <- asset_df$main %>% 
   mutate(across(all_of(columns_to_label), as_factor))
@@ -84,6 +89,10 @@ mutate(
       levels = unique(subactividade_descricao_short)
     )
   )
+
+t <- df_main %>% 
+  select(starts_with("calc_"), calc_custo_deslocacao, calc_custo_total)
+
 ```
 
 # Sumário Executivo
@@ -97,7 +106,7 @@ type_activities %>%
   # Column names
   cols_label(
     subactividade_tipo = "Tipo de Subactividade",
-    n = "Número"
+    n = "Quantidade"
   ) %>%
 
   # Column widths
