@@ -6,7 +6,7 @@ execute:
   warning: false
 ---
 
-```{r, echo='false', warning='false', results='hide'}
+```{r, results='hide'}
 library(tidyverse)
 library(ggthemes)
 library(robotoolbox)
@@ -232,7 +232,7 @@ plot_gantt <- ggplot(df_main_dates) +
     axis.text.y = element_text(size = 13),
     panel.spacing = unit(0.5, "lines"),
     panel.grid.minor.x = element_blank(),
-    strip.background = element_rect(fill = "grey90", color = "grey20"),
+    strip.background = element_rect(fill = "grey100", color = "grey20"),
     strip.text = element_text(color = "grey20", 
                               face = "bold", 
                               size = 11,

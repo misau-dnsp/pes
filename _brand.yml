@@ -7,12 +7,12 @@ meta:
   description: |
     MISAU is the Mozambican Ministry of Health
 
-logo: Images/emblem_moz_small.png
+# logo: Images/emblem_moz_small.png
 
-# logo:
-#   small: Images/emblem_moz_small.png
-#   medium: Images/emblem_moz_med.png
-#   large: Images/emblem_moz_large.png
+logo:
+  small: Images/emblem_moz_small.png
+  medium: Images/emblem_moz_med.png
+  large: Images/emblem_moz_large.png
   
 color:
   palette:
