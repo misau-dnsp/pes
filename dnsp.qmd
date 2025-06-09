@@ -6,7 +6,7 @@ execute:
   warning: false
 ---
 
-```{r, results='hide'}
+```{r, echo='false', warning='false', results='hide'}
 library(tidyverse)
 library(ggthemes)
 library(robotoolbox)
@@ -15,6 +15,7 @@ library(dm)
 library(haven)
 library(gt)
 library(glue)
+source("Scripts/utilities.R")
 
 acct_kobo <- "kobo-jlara"
 acct_kobo_con <- get_account(name = acct_kobo)
@@ -22,9 +23,15 @@ acct_kobo_con <- get_account(name = acct_kobo)
 kobo_token(username = acct_kobo_con$username,
            password = acct_kobo_con$password,
            url = acct_kobo_con$url)
+
 ```
 
 ```{r load-kobo-data}
+
+# timestamp for indicating data of data pull
+dt <- today()
+
+# fetch kobo assets using account credentials
 assets <- kobo_asset_list()
 
 uid <- assets %>%
@@ -36,32 +43,27 @@ asset_list <- kobo_asset(uid)
 
 asset_df <- kobo_submissions(asset_list)
 
+rm(assets, asset_list, uid)
+
 ```
 
 
 ```{r munge-data}
 
-# create vector of vars where value to be substituted for label
-columns_to_label <- c("responsavel_programa", 
-                      "responsavel_pf_ma", 
-                      "subactividade_tipo", 
-                      "objectivo_especifico", 
-                      "objectivo_pess", 
-                      "subactividade_local")
+# df main for... only activity count at present
+df_main <- asset_df$main %>%
+  mutate(across(all_of(columns_to_label), as_factor)) %>% 
+  select(!any_of(columns_to_remove)) %>% 
+  calc_budget_vars()
 
-df_main <- asset_df$main %>% 
-  mutate(across(all_of(columns_to_label), as_factor))
+# df dates for ...
+df_dates <- asset_df$tbl_datas_impl
 
-n_activities <- nrow(df_main)
-
-type_activities <- df_main %>% 
-  count(subactividade_tipo, name = "n")
-
-df_tbl_dates <- asset_df$tbl_datas_impl
-
-df_gantt <- asset_df %>%
+# df main & dates for gantt plot
+df_main_dates <- asset_df %>%
   dm_flatten_to_tbl(.start = tbl_datas_impl,
                     .join = left_join) %>% 
+    mutate(across(all_of(columns_to_label), as_factor)) %>% 
   select(
     responsavel_programa,
     subactividade_tipo,
@@ -90,53 +92,108 @@ mutate(
     )
   )
 
-t <- df_main %>% 
-  select(starts_with("calc_"), calc_custo_deslocacao, calc_custo_total)
+```
+
+```{r calculate-values}
+
+# count of subactivities
+val_n_activities <- nrow(df_main)
+
+# count of subactivities count by type
+tbl_activities_type <- df_main %>% 
+  group_by(subactividade_tipo) %>%
+  summarise(
+    n = n(),  # count of rows per tipo
+    across(c(calc_custo_total, financiamento_oe, financiamento_prosaude, calc_financiamento_outro, calc_financiamento_lacuna), ~ sum(.x, na.rm = TRUE))
+  )
+
+# sum of costs
+val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>% 
+  format(big.mark = ".", decimal.mark = ",", nsmall = 0)
 
 ```
 
 # Sumário Executivo
 
-Como parte do Plano Económico e Social (PES) do ano 2026, a Direcção Nacional de Saúde Pública (DNSP) está a introduzir novas tecnologias para a recolha, análise e monitoria da execução das actividades planificadas. A intenção é de automatizar a gestão dos dados PES e, desta forma, melhorar a planificação e execução em si. Até à data de criação do presente relatório, o pessoal do programa DNSP apresentou informações para um total de `r n_activities` subactividades.
+Como parte do Plano Económico e Social (PES) do ano 2026, a Direcção Nacional de Saúde Pública (DNSP) está a introduzir novas tecnologias para a recolha, análise e monitoria da execução das actividades planificadas. A intenção é de automatizar a gestão dos dados do PES e, desta forma, melhorar a planificação, monitoria, e execução em si. Até à data de criação do presente relatório (`r dt`), o pessoal do programa DNSP submetiu no KoboToolbox informações para `r val_n_activities` subactividades com um custo total de `r val_cost_activities` MT.
 
 ```{r plot-type-table}
-type_activities %>%
+
+columns_gt_numeric <- tbl_activities_type %>%
+  select(where(is.numeric)) %>%
+  colnames()
+
+tbl_activities_type %>%
   gt() %>%
   
-  # Column names
-  cols_label(
-    subactividade_tipo = "Tipo de Subactividade",
-    n = "Quantidade"
-  ) %>%
-
-  # Column widths
-  cols_width(
-    subactividade_tipo ~ px(500),
-    n ~ px(200)
-  ) %>%
-
   # General table options
   tab_options(
     table.font.names = c("Nunito Sans", "sans-serif"),
     table.align = "left"
   ) %>%
-
-  # Style for column headers (small, bold)
+  
+  # Column spanner
+   tab_spanner(
+    label = "Financiamento Previsto",
+    columns = c(financiamento_oe, financiamento_prosaude, calc_financiamento_outro)
+  ) %>% 
+  
+  # Spanner styles
   tab_style(
-    style = cell_text(size = px(14), weight = "bold", align = "left"),
+    style = cell_text(size = px(13), weight = "bold", align = "center"),
+    locations = cells_column_spanners()
+  ) %>% 
+  
+  # Header styles
+  tab_style(
+    style = cell_text(size = px(13), weight = "bold", align = "center"),
     locations = cells_column_labels()
   ) %>%
-
-  # Body text style
+  
   tab_style(
-    style = cell_text(color = "#1C2826", align = "left", size = px(14)),
-    locations = cells_body()
+    style = cell_text(size = px(13), weight = "bold", align = "left"),
+    locations = cells_column_labels(columns = subactividade_tipo)
   ) %>%
-
-  # Center-align the "n" column
+  
+  # Body styles
   tab_style(
-    style = cell_text(align = "center"),
-    locations = cells_body(columns = n)
+    style = cell_text(size = px(13), color = "#1C2826", align = "center"),
+    locations = cells_body()
+  ) %>% 
+  
+  tab_style(
+    style = cell_text(size = px(13), align = "left"),
+    locations = cells_body(columns = subactividade_tipo)
+  ) %>% 
+
+  # Column names
+  cols_label(
+    subactividade_tipo = "Tipo de Subactividade",
+    n = "Qd.",
+    calc_custo_total = "Custo",
+    financiamento_oe = "OE",
+    financiamento_prosaude = "ProSaude",
+    calc_financiamento_outro = "Outro",
+    calc_financiamento_lacuna = "Lacuna"
+  ) %>%
+  
+  # Column widths
+  cols_width(
+    subactividade_tipo ~ px(300),
+    n ~ px(60),
+    calc_custo_total ~ px(75),
+    financiamento_oe ~ px(75),
+    financiamento_prosaude ~ px(75),
+    calc_financiamento_outro ~ px(75),
+    calc_financiamento_lacuna ~ px(75)
+  ) %>%
+  
+  # Number formatting
+  fmt_number(
+    columns = all_of(columns_gt_numeric),
+    decimals = 0,
+    sep_mark = ".",
+    dec_mark = ","
   )
 
 ```
@@ -146,9 +203,10 @@ A fim de monitorar a execução atempada das actividades planificadas ao longo d
 ```{r plot-activity-gantt, fig.width=12, fig.align='center', fig.bg="transparent"}
 
 # plot activity gantt chart
-df_gantt_plot <- ggplot(df_gantt) +
+plot_gantt <- ggplot(df_main_dates) +
   geom_line(
-    aes(x = subactividade_descricao_short, y = data, color = responsavel_programa),
+    aes(x = subactividade_descricao_short, y = data),
+    color = "#2780e3",
     linewidth = 4,
     lineend = "butt",
     linejoin = "mitre"
@@ -162,7 +220,7 @@ df_gantt_plot <- ggplot(df_gantt) +
   theme_fivethirtyeight() +
   labs(
     title = "Cronograma de Actividades PES 2026 (DNSP)",
-    caption = "Fonte: KoboToolbox, DNSP 2026 PES",
+    caption = "Fonte: DNSP KoboToolbox",
     x = NULL,
     y = "Date"
   ) +
@@ -182,5 +240,5 @@ df_gantt_plot <- ggplot(df_gantt) +
     )
   )
 
-df_gantt_plot
+plot_gantt
 ```
