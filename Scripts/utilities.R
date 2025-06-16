@@ -62,6 +62,7 @@ gen_tbl_financiador <- function(df, breakdown = financiador_detalhe) {
       financiamento = sum(valor, na.rm = TRUE),
       .groups = "drop"
     ) %>%
+    arrange(desc(financiamento)) %>% 
     bind_rows(
       df %>%
         summarise(

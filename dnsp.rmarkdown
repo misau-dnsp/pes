@@ -47,7 +47,6 @@ rm(assets, asset_list, uid)
 
 ```
 
-
 ```{r  munge-data}
 #| echo: false
 #| message: false
@@ -158,9 +157,13 @@ val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>%
 
 ```
 
+
+
 # Sumário Executivo
 
 Como parte do Plano Económico e Social (PES) do ano 2026, a Direcção Nacional de Saúde Pública (DNSP) está a introduzir novas tecnologias para a recolha, análise e monitoria da execução das actividades planificadas. A intenção é de automatizar a gestão dos dados do PES e, desta forma, melhorar a planificação, monitoria, e execução em si. Até à data de criação do presente relatório (`r dt`), o pessoal do programa DNSP submetiu no KoboToolbox informações para `r val_n_activities` subactividades com um custo total de `r val_cost_activities` MT.
+
+
 
 ```{r plot-programa-table}
 
@@ -333,6 +336,7 @@ tbl_activities_type %>%
   )
 
 ```
+
 ```{r plot-financiamento-table}
 
 columns_gt_numeric <- tbl_financiamento_financiador %>%
@@ -399,7 +403,11 @@ tbl_financiamento_financiador %>%
 
 ```
 
+
+
 A fim de monitorar a execução atempada das actividades planificadas ao longo de 2026, a equipa de M&A da UMA criou uma diagrama Gantt que os gestores de programas e a direcção podem utilizar para verificar o estado das actividades.  Esta visualização será actualizada cada mes ou trimestre (periodicadade por defenir) com base nas informações fornecidas pelos responsáveis de M&A da área do programa em ligação com a UMA
+
+
 
 ```{r plot-activity-gantt, fig.width=12, fig.height=4, fig.align='center', fig.bg="transparent"}
 
@@ -443,3 +451,4 @@ plot_gantt <- ggplot(df_main_dates) +
 
 plot_gantt
 ```
+
