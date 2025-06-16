@@ -48,7 +48,10 @@ rm(assets, asset_list, uid)
 ```
 
 
-```{r echo: false, warning: false, message: false munge-data}
+```{r  munge-data}
+#| echo: false
+#| message: false
+#| warning: false
 
 # df main for... only activity count at present
 df_main <- asset_df$main %>%
@@ -90,59 +93,64 @@ mutate(
     )
   )
 
+# df main & fianciamento_outro for tables
+df_main_financ <- asset_df %>%
+  dm_flatten_to_tbl(.start = grp_financiamento_outro,
+                    .join = left_join) %>% 
+  
+  mutate(across(all_of(columns_to_label), as_factor)) %>% 
+  
+  select(c(columns_to_label),
+         starts_with("financiamento_"),
+         -all_of(starts_with(c("financiamento_outro_especificacao_fonte_", 
+                               "financiamento_outro_total.")))) %>% 
+  pivot_longer(cols = c(financiamento_oe,
+                        financiamento_prosaude,
+                        financiamento_outro),
+               names_to = "financiador",
+               values_to = "valor") %>% 
+  filter(valor > 0) %>% 
+  mutate(financiamento_outro_especificacao = str_remove_all(financiamento_outro_especificacao, "fonte_"),
+         financiador = str_remove_all(financiador, "financiamento_"),
+         financiador = case_when(financiador == "oe" ~ "OE",
+                                 financiador == "prosaude" ~ "ProSaude",
+                                 financiador == "outro" ~ "Outro",
+                                 .default = financiador),
+         financiador_detalhe = case_when(financiador == "OE" ~ financiador,
+                                         financiador == "ProSaude" ~ financiador,
+                                         financiamento_outro_especificacao == "banco_mundial" ~ "Banco Mundial",
+                                         financiamento_outro_especificacao == "cdc" ~ "CDC/COAG",
+                                         financiamento_outro_especificacao == "fdc" ~ "FDC",
+                                         financiamento_outro_especificacao == "fnuap" ~ "FNUAP",
+                                         financiamento_outro_especificacao == "fundo_global" ~ "Fundo Global",
+                                         financiamento_outro_especificacao == "gavi" ~ "GAVI",
+                                         financiamento_outro_especificacao == "oim" ~ "OIM",
+                                         financiamento_outro_especificacao == "oms" ~ "OMS",
+                                         financiamento_outro_especificacao == "pepfar_1" ~ "PEPFAR",
+                                         financiamento_outro_especificacao == "prosaude" ~ "ProSaude",
+                                         financiamento_outro_especificacao == "rti" ~ "RTI",
+                                         financiamento_outro_especificacao == "unicef" ~ "UNICEF",
+                                         financiamento_outro_especificacao == "outros" ~ "Outra",
+                                         .default = financiador)
+  ) %>% 
+  select(-starts_with("financiamento_outro")) %>% 
+  relocate(valor, .after = everything())
+
+
 ```
 
 ```{r calculate-values}
+#| echo: false
+#| message: false
+#| warning: false
 
 # count of subactivities
 val_n_activities <- nrow(df_main)
 
-# count of subactivities count by type
-tbl_activities_type <- df_main %>%
-  group_by(subactividade_tipo) %>%
-  summarise(
-    n = n(),
-    across(
-      c(calc_custo_total, financiamento_oe, financiamento_prosaude, financiamento_outro_total, calc_financiamento_lacuna),
-      ~ sum(.x, na.rm = TRUE)
-    ),
-    .groups = "drop"
-  ) %>%
-  bind_rows(
-    summarise(df_main,
-      subactividade_tipo = "Total",
-
-      n = n(),
-      calc_custo_total = sum(calc_custo_total, na.rm = TRUE),
-      financiamento_oe = sum(financiamento_oe, na.rm = TRUE),
-      financiamento_prosaude = sum(financiamento_prosaude, na.rm = TRUE),
-      financiamento_outro_total = sum(financiamento_outro_total, na.rm = TRUE),
-      calc_financiamento_lacuna = sum(calc_financiamento_lacuna, na.rm = TRUE)
-    )
-  )
-
-# count of subactivities count by program
-tbl_activities_programa <- df_main %>%
-  group_by(responsavel_programa) %>%
-  summarise(
-    n = n(),
-    across(
-      c(calc_custo_total, financiamento_oe, financiamento_prosaude, financiamento_outro_total, calc_financiamento_lacuna),
-      ~ sum(.x, na.rm = TRUE)
-    ),
-    .groups = "drop"
-  ) %>%
-  bind_rows(
-    summarise(df_main,
-      responsavel_programa = "Total",
-      n = n(),
-      calc_custo_total = sum(calc_custo_total, na.rm = TRUE),
-      financiamento_oe = sum(financiamento_oe, na.rm = TRUE),
-      financiamento_prosaude = sum(financiamento_prosaude, na.rm = TRUE),
-      financiamento_outro_total = sum(financiamento_outro_total, na.rm = TRUE),
-      calc_financiamento_lacuna = sum(calc_financiamento_lacuna, na.rm = TRUE)
-    )
-  )
+# summary tables by type, program, and donor
+tbl_activities_type <- gen_tbl_activities(df_main)
+tbl_activities_programa <- gen_tbl_activities(df_main, breakdown = responsavel_programa)
+tbl_financiamento_financiador <- gen_tbl_financiador(df_main_financ)
 
 # sum of costs
 val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>% 
@@ -221,7 +229,7 @@ tbl_activities_programa %>%
  
   # Column widths
   cols_width(
-    responsavel_programa ~ px(200),
+    responsavel_programa ~ px(300),
     n ~ px(60),
     calc_custo_total ~ px(75),
     financiamento_oe ~ px(75),
@@ -314,6 +322,71 @@ tbl_activities_type %>%
     financiamento_prosaude ~ px(75),
     financiamento_outro_total ~ px(75),
     calc_financiamento_lacuna ~ px(75)
+  ) %>%
+  
+  # Number formatting
+  fmt_number(
+    columns = all_of(columns_gt_numeric),
+    decimals = 0,
+    sep_mark = ".",
+    dec_mark = ","
+  )
+
+```
+```{r plot-type-table}
+
+columns_gt_numeric <- tbl_financiamento_financiador %>%
+  select(where(is.numeric)) %>%
+  colnames()
+
+tbl_financiamento_financiador %>% 
+  gt() %>% 
+    # General table options
+  tab_options(
+    table.font.names = c("Nunito Sans", "sans-serif"),
+    table.align = "left"
+  ) %>%
+  
+  
+  # Header styles
+  tab_style(
+    style = cell_text(size = px(13), weight = "bold", align = "center"),
+    locations = cells_column_labels()
+  ) %>%
+  
+  tab_style(
+    style = cell_text(size = px(13), weight = "bold", align = "left"),
+    locations = cells_column_labels(columns = financiador_detalhe)
+  ) %>%
+  
+  # Body styles
+  tab_style(
+    style = cell_text(size = px(13), color = "#1C2826", align = "center"),
+    locations = cells_body()
+  ) %>% 
+  
+  tab_style(
+    style = cell_text(size = px(13), align = "left"),
+    locations = cells_body(columns = financiador_detalhe)
+  ) %>% 
+  
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(rows = financiador_detalhe == "Total")
+  ) %>%
+  
+  # Column names
+  cols_label(
+    financiador_detalhe = "Financiador",
+    n = "Qd.",
+    financiamento = "Financiamento"
+  ) %>%
+  
+  # Column widths
+  cols_width(
+    financiador_detalhe ~ px(100),
+    n ~ px(60),
+    financiamento ~ px(100)
   ) %>%
   
   # Number formatting
