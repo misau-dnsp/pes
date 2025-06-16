@@ -230,12 +230,12 @@ tbl_activities_programa %>%
   # Column widths
   cols_width(
     responsavel_programa ~ px(300),
-    n ~ px(60),
-    calc_custo_total ~ px(75),
-    financiamento_oe ~ px(75),
-    financiamento_prosaude ~ px(75),
-    financiamento_outro_total ~ px(75),
-    calc_financiamento_lacuna ~ px(75)
+    n ~ px(75),
+    calc_custo_total ~ px(100),
+    financiamento_oe ~ px(100),
+    financiamento_prosaude ~ px(100),
+    financiamento_outro_total ~ px(100),
+    calc_financiamento_lacuna ~ px(100)
   ) %>%
  
   # Number formatting
@@ -316,12 +316,12 @@ tbl_activities_type %>%
   # Column widths
   cols_width(
     subactividade_tipo ~ px(300),
-    n ~ px(60),
-    calc_custo_total ~ px(75),
-    financiamento_oe ~ px(75),
-    financiamento_prosaude ~ px(75),
-    financiamento_outro_total ~ px(75),
-    calc_financiamento_lacuna ~ px(75)
+    n ~ px(75),
+    calc_custo_total ~ px(100),
+    financiamento_oe ~ px(100),
+    financiamento_prosaude ~ px(100),
+    financiamento_outro_total ~ px(100),
+    calc_financiamento_lacuna ~ px(100)
   ) %>%
   
   # Number formatting
@@ -385,7 +385,7 @@ tbl_financiamento_financiador %>%
   # Column widths
   cols_width(
     financiador_detalhe ~ px(100),
-    n ~ px(60),
+    n ~ px(75),
     financiamento ~ px(100)
   ) %>%
   
