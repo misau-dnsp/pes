@@ -9,6 +9,8 @@ library(dm)
 library(haven)
 library(gt)
 library(glue)
+library(openxlsx)
+library(scales)
 
 
 # DEFINE GLOBAL VARIABLES ---------------------------------------------------------
@@ -278,6 +280,78 @@ df <- asset_df$main %>%
     )
   ) %>% 
   left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
-  select(-c(`_index`, subactividade_local))
+  select(-c(`_index`, subactividade_local)) %>% 
+  # Format numbers
+  mutate(across(
+    c(financiamento_total, financiamento_oe, financiamento_prosaude, financiamento_outro_total, financiamento_lacuna),
+    ~ number(.x, big.mark = ",", decimal.mark = ".", accuracy = 0.01)  # Keep two decimal places
+  ),
+  subactividade_meta = as.numeric(subactividade_meta))
 
 
+
+
+# WRITE TO DISK -----------------------------------------------------------
+
+wb <- createWorkbook()
+addWorksheet(wb, "Calendario")
+
+# Write data without formatting first
+writeData(wb, sheet = "Calendario", x = df, startCol = 1, startRow = 1)
+
+# Style for "x" cells (light green background, bold text)
+style_x <- createStyle(
+  fgFill = "#92D050",       # Light green fill
+  halign = "center",        # Horizontal center
+  valign = "center",        # Vertical center
+  textDecoration = NULL     # No bold
+)
+
+style_centered <- createStyle(
+  halign = "center",
+  valign = "center"
+)
+
+style_wrap <- createStyle(
+  wrapText = TRUE
+)
+
+
+# Apply style to all cells with value "x"
+# Exclude first column (_parent_index or label column)
+data_range <- df[, -1]
+
+for (col_index in seq_along(data_range)) {
+  col_letter <- int2col(col_index + 1) # +1 because first column is not styled
+  rows <- which(data_range[[col_index]] == "x") + 1 # +1 because of header row
+  if (length(rows) > 0) {
+    addStyle(
+      wb, sheet = "Calendario", style = style_x,
+      rows = rows, cols = col_index + 1,
+      gridExpand = FALSE, stack = TRUE
+    )
+  }
+}
+
+addStyle(
+  wb, sheet = "Calendario", style = style_centered,
+  rows = 1:(nrow(df) + 1),  # +1 to include header
+  cols = 1,                           # Column 2 = "n"
+  gridExpand = TRUE
+)
+
+addStyle(
+  wb, sheet = "Calendario", style = style_wrap,
+  rows = 1:(nrow(df) + 1),  # Includes header row
+  cols = c(2, 4),
+  gridExpand = TRUE
+)
+
+setColWidths(
+  wb, sheet = "Calendario",
+  cols = 1:ncol(df),
+  widths = "auto"
+)
+
+# Save workbook
+saveWorkbook(wb, "Dataout/pesoe_calendar_colored.xlsx", overwrite = TRUE)
