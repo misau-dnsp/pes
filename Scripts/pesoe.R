@@ -103,7 +103,7 @@ rm(assets, asset_list, uid)
 dm_draw(asset_df)
 
 
-# CREATE CODE DF ----------------------------------------------------
+# MUNGE DF CODES ----------------------------------------------------
 
 # Create dataframe for activity and subactivity codes
 df_codigos <- asset_df$main %>% 
@@ -137,7 +137,7 @@ df_codigos <- asset_df$main %>%
 rm(tbl_objectivos_esp)
 
 
-# CREATE GEOTARGET DF -----------------------------------------------------
+# MUNGE DF GEOTARGET -----------------------------------------------------
 
 df_metas <- asset_df$tbl_geografia_impl %>% 
   # Pivot geographic target table wide
@@ -175,7 +175,7 @@ df_metas <- asset_df$tbl_geografia_impl %>%
          localizacao)
 
 
-# CREATE IMPLEMENTATION SCHEDULE ------------------------------------------
+# MUNGE DF CALENDAR ------------------------------------------
 
 # Create tibble of the entire year in case subactivities don't cover entire period
 full_year <- tibble(
@@ -231,7 +231,7 @@ df_calendario <- full_grid %>%
 rm(full_year, month_week_levels, df_calendar_long, full_grid)
 
 
-# CREATE MAIN DF & JOIN--------------------------------------------------------------
+# JOIN DF & CLEAN--------------------------------------------------------------
 
 df <- asset_df$main %>%
   # Subset variables and convert values to labels
