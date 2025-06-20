@@ -168,9 +168,11 @@ df_metas <- asset_df$tbl_geografia_impl %>%
   mutate(
     localizacao = pmap_chr(
       select(., -`_parent_index`),
-      ~ c(...) %>%
-        discard(is.na) %>%
-        paste(collapse = ", ")
+      function(...) {
+        vals <- c(...)
+        vals <- vals[!is.na(vals)]
+        if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
+      }
     )
   ) %>% 
   select(`_parent_index`,
