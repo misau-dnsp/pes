@@ -1,6 +1,5 @@
 
-# LOAD DEPENDENCIES ---------------------------------------------------------
-
+# ATTACH DEPENDENCIES ---------------------------------------------------------
 
 library(tidyverse)
 library(ggthemes)
@@ -12,8 +11,7 @@ library(gt)
 library(glue)
 
 
-# LOAD DEPENDENCIES ---------------------------------------------------------
-
+# DEFINE GLOBAL VARIABLES ---------------------------------------------------------
 
 acct_kobo <- "kobo-jlara"
 acct_kobo_con <- get_account(name = acct_kobo)
@@ -82,7 +80,6 @@ tbl_objectivos_esp <- tibble::tibble(
 
 # LOAD KOBO DATA ----------------------------------------------------------
 
-
 # timestamp for indicating data of data pull
 dt <- today()
 
@@ -103,23 +100,10 @@ rm(assets, asset_list, uid)
 
 # DRAW SCHEMA ------------------------------------------------------------
 
-
 dm_draw(asset_df)
 
 
-# CREATE MAIN DF --------------------------------------------------------------
-
-
-# Create main dataframe that will be built on
-df <- asset_df$main %>%
-  select(any_of(main_vars)) %>%
-  mutate(
-    across(any_of(columns_to_label), as_factor)
-  ) %>% glimpse()
-
-
-# CREATE OBJECTIVES DF ----------------------------------------------------
-
+# CREATE CODE DF ----------------------------------------------------
 
 # Create dataframe for activity and subactivity codes
 df_codigos <- asset_df$main %>% 
@@ -149,28 +133,151 @@ df_codigos <- asset_df$main %>%
   select('_index',
          codigo_actividade,
          codigo_subactividade)
-  
-  
+
+rm(tbl_objectivos_esp)
 
 
+# CREATE GEOTARGET DF -----------------------------------------------------
 
-# ARCHIVE -----------------------------------------------------------------
+df_metas <- asset_df$tbl_geografia_impl %>% 
+  # Pivot geographic target table wide
+  select(`_parent_index`, geo_nome_geo_label, meta_geo) %>% 
+  mutate(
+    localizacao = str_c(geo_nome_geo_label, " (", meta_geo, ")")
+  ) %>% 
+  pivot_wider(
+    names_from = geo_nome_geo_label,
+    values_from = localizacao,
+    values_fn = list(localizacao = ~ paste(.x, collapse = ", "))
+  ) %>% 
+  select(-meta_geo) %>% 
+  # Engineer geographic targets within single cell
+  group_by(`_parent_index`) %>%
+  summarise(
+    across(
+      .cols = everything(), 
+      .fns = ~ {
+        vals <- na.omit(unique(.x))
+        if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
+      }
+    ),
+    .groups = "drop"
+  ) %>% 
+  mutate(
+    localizacao = pmap_chr(
+      select(., -`_parent_index`),
+      ~ c(...) %>%
+        discard(is.na) %>%
+        paste(collapse = ", ")
+    )
+  ) %>% 
+  select(`_parent_index`,
+         localizacao)
 
 
-  pivot_longer(cols = c(responsavel_programa, 
-                        objectivo_pess,
-                        subactividade_tipo,
-                        subactividade_local),
-               names_to = "indicator",
-               values_to = "value")
+# CREATE IMPLEMENTATION SCHEDULE ------------------------------------------
 
-  
-    
-  # left_join(map_label,
-  #           by = c("value" = "indicator")
-  # ) |> 
-  select(!c(value,
-            actividade_principal)) |> 
-  pivot_wider(names_from = indicator,
-              values_from = label) %>%
-  mutate(subactividade_meta_label = as.character(subactividade_meta_label))
+# Create tibble of the entire year in case subactivities don't cover entire period
+full_year <- tibble(
+  dates = seq(as.Date("2026-01-01"), as.Date("2026-12-31"), by = "day")
+) %>%
+  mutate(
+    month = month(dates, label = TRUE, abbr = TRUE),
+    week = isoweek(dates),
+    month_week = paste0(month, "_", sprintf("%02d", week))
+  ) %>%
+  distinct(month_week, .keep_all = TRUE) %>%
+  arrange(dates)
+
+# Create sequenced vector based on calendar
+month_week_levels <- full_year$month_week
+
+# Identify calendar weeks where subactivity occurs
+df_calendar_long <- asset_df$tbl_datas_impl %>%
+  select(`_parent_index`, subactividade_data_inicio, subactividade_data_fim) %>%
+  rowwise() %>%
+  mutate(dates = list(seq(subactividade_data_inicio, subactividade_data_fim, by = "1 day"))) %>%
+  unnest(dates) %>%
+  mutate(
+    month = month(dates, label = TRUE, abbr = TRUE),
+    week = isoweek(dates),
+    month_week = paste0(month, "_", sprintf("%02d", week))
+  ) %>%
+  ungroup() %>%
+  distinct(`_parent_index`, month_week) %>%
+  mutate(value = "x")
+
+# Extract unique parent indexes from your data
+parent_ids <- asset_df$tbl_datas_impl %>%
+  distinct(`_parent_index`) %>%
+  pull()
+
+# Ensure calendar includes all combinations of _parent_index and month_week
+full_grid <- tidyr::crossing(
+  `_parent_index` = parent_ids,
+  month_week = factor(month_week_levels, levels = month_week_levels)
+)
+
+# Finalize calendar
+df_calendario <- full_grid %>%
+  left_join(df_calendar_long, by = c("_parent_index", "month_week")) %>%
+  mutate(value = replace_na(value, "")) %>%
+  pivot_wider(
+    names_from = month_week,
+    values_from = value
+  ) %>%
+  arrange(`_parent_index`)
+
+rm(full_year, month_week_levels, df_calendar_long, full_grid)
+
+
+# CREATE MAIN DF & JOIN--------------------------------------------------------------
+
+df <- asset_df$main %>%
+  # Subset variables and convert values to labels
+  select(any_of(main_vars)) %>%
+  mutate(
+    across(any_of(columns_to_label), as_factor)
+  ) %>% 
+  # Join codigos and metas
+  left_join(df_codigos) %>% 
+  left_join(df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
+  arrange(codigo_subactividade) %>% 
+  mutate(n = row_number()) %>% 
+  rowwise() %>% 
+  mutate(financiamento_total = sum(c_across(financiamento_oe:financiamento_outro_total))) %>% 
+  ungroup() %>% 
+  select(
+    `_index`,
+    n,
+    codigo_actividade,
+    actividade_principal_descricao,
+    actividade_principal_indicador,
+    actividade_principal_meta,
+    responsavel_programa,
+    codigo_subactividade,
+    subactividade_descricao,
+    subactividade_local,
+    subactividade_meta,
+    subactividade_indicador,
+    localizacao,
+    subactividade_beneficiario,
+    financiamento_total,
+    financiamento_oe,
+    financiamento_prosaude,
+    financiamento_outro_total,
+    financiamento_lacuna = calc_financiamento_lacuna
+  ) %>% 
+  # Engineer localizacao variable for international and central subactivities
+  mutate(
+    subactividade_meta = as.character(subactividade_meta),
+    localizacao = case_when(
+      subactividade_local == "Nivel Internacional" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
+      subactividade_local == "Nivel Central" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
+      TRUE ~ localizacao
+    )
+  ) %>% 
+  left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
+  select(-c(`_index`, subactividade_local))
+
+
