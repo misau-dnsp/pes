@@ -83,13 +83,13 @@ tbl_objectivos_esp <- tibble::tibble(
 # LOAD KOBO DATA ----------------------------------------------------------
 
 # timestamp for indicating data of data pull
-dt <- today()
+dt <- now()
 
 # fetch kobo assets using account credentials
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  filter(name == "DNSP PES 2026 Final") %>%
+  filter(name == "DNSP PES 2026 Final v3") %>%
   pull(uid) %>%
   first()
 
@@ -284,11 +284,14 @@ df <- asset_df$main %>%
   left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
   select(-c(`_index`, subactividade_local)) %>% 
   # Format numbers
-  mutate(across(
-    c(financiamento_total, financiamento_oe, financiamento_prosaude, financiamento_outro_total, financiamento_lacuna),
-    ~ number(.x, big.mark = ",", decimal.mark = ".", accuracy = 0.01)  # Keep two decimal places
-  ),
-  subactividade_meta = as.numeric(subactividade_meta))
+  mutate(
+    across(
+      c(financiamento_total, financiamento_oe, financiamento_prosaude,
+        financiamento_outro_total, financiamento_lacuna),
+      ~ number(as.numeric(.x), big.mark = ",", decimal.mark = ".", accuracy = 0.01)
+    ),
+    subactividade_meta = as.numeric(subactividade_meta)
+  )
 
 
 
@@ -355,5 +358,19 @@ setColWidths(
   widths = "auto"
 )
 
-# Save workbook
-saveWorkbook(wb, "Dataout/pesoe_calendar_colored.xlsx", overwrite = TRUE)
+# Write a new tab include creation date info
+formatted_dt <- format(dt, "%d/%m/%Y %H:%M")
+
+addWorksheet(wb, "Info")
+
+writeData(wb, sheet = "Info", x = "Criado no dia:", startCol = 1, startRow = 1)
+writeData(wb, sheet = "Info", x = formatted_dt, startCol = 2, startRow = 1)
+
+# Format dt for filename (e.g. 2024-06-20_14h30m)
+timestamp_str <- format(dt, "%Y-%m-%d_%Hh%Mm")
+
+# Create the file name
+file_name <- paste0("Dataout/pesoe_calendar_", timestamp_str, ".xlsx")
+
+# Save the workbook
+saveWorkbook(wb, file = file_name, overwrite = TRUE)
