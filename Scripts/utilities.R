@@ -25,30 +25,37 @@ columns_to_remove <- c("calc_custo_instrumentos",
 
 
 
-gen_tbl_activities <- function(df, breakdown = subactividade_tipo) {
+library(dplyr)
+
+gen_tbl_activities <- function(df, breakdown = "subactividade_tipo") {
+  # Use tidy evaluation for grouping
+  group_var <- sym(breakdown)
   
-  df %>%
-    group_by({{ breakdown }}) %>%
+  df_summary <- df %>%
+    group_by(!!group_var) %>%
     summarise(
       n = n(),
       across(
-        c(calc_custo_total, financiamento_oe, financiamento_prosaude, financiamento_outro_total, calc_financiamento_lacuna),
-        ~ sum(.x, na.rm = TRUE)
+        c(calc_custo_total, financiamento_oe, financiamento_prosaude,
+          financiamento_outro_total, calc_financiamento_lacuna),
+        ~ sum(as.numeric(.x), na.rm = TRUE),
+        .names = "{.col}"
       ),
       .groups = "drop"
-    ) %>%
-    bind_rows(
-      df %>%
-        summarise(
-          {{ breakdown }} := "Total",
-          n = n(),
-          calc_custo_total = sum(calc_custo_total, na.rm = TRUE),
-          financiamento_oe = sum(financiamento_oe, na.rm = TRUE),
-          financiamento_prosaude = sum(financiamento_prosaude, na.rm = TRUE),
-          financiamento_outro_total = sum(financiamento_outro_total, na.rm = TRUE),
-          calc_financiamento_lacuna = sum(calc_financiamento_lacuna, na.rm = TRUE)
-        )
     )
+  
+  df_total <- df %>%
+    summarise(
+      !!group_var := "Total",
+      n = n(),
+      calc_custo_total = sum(as.numeric(calc_custo_total), na.rm = TRUE),
+      financiamento_oe = sum(as.numeric(financiamento_oe), na.rm = TRUE),
+      financiamento_prosaude = sum(as.numeric(financiamento_prosaude), na.rm = TRUE),
+      financiamento_outro_total = sum(as.numeric(financiamento_outro_total), na.rm = TRUE),
+      calc_financiamento_lacuna = sum(as.numeric(calc_financiamento_lacuna), na.rm = TRUE)
+    )
+  
+  bind_rows(df_summary, df_total)
 }
 
 

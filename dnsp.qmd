@@ -35,7 +35,7 @@ dt <- today()
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  filter(name == "DNSP PES 2026 Final") %>%
+  filter(name == "DNSP PES 2026 Final v3") %>%
   pull(uid) %>%
   first()
 
@@ -95,7 +95,7 @@ mutate(
 
 # df main & fianciamento_outro for tables
 df_main_financ <- asset_df %>%
-  dm_flatten_to_tbl(.start = grp_financiamento_outro,
+  dm_flatten_to_tbl(.start = tbl_financiamento_outro,
                     .join = left_join) %>% 
   
   mutate(across(all_of(columns_to_label), as_factor)) %>% 
@@ -149,8 +149,9 @@ val_n_activities <- nrow(df_main)
 
 # summary tables by type, program, and donor
 tbl_activities_type <- gen_tbl_activities(df_main)
-tbl_activities_programa <- gen_tbl_activities(df_main, breakdown = responsavel_programa)
+tbl_activities_programa <- gen_tbl_activities(df_main, breakdown = "responsavel_programa")
 tbl_financiamento_financiador <- gen_tbl_financiador(df_main_financ)
+
 
 # sum of costs
 val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>% 
@@ -417,8 +418,8 @@ plot_gantt <- ggplot(df_main_dates) +
     date_labels = "%m-%Y"
   ) +
   coord_flip() +
-  facet_wrap(~ responsavel_programa, ncol = 1, scales = "free_y") +
   theme_fivethirtyeight() +
+  facet_wrap(~ responsavel_programa, ncol = 1, scales = "free") +
   labs(
     title = "Cronograma de Actividades PES 2026 (DNSP)",
     caption = "Fonte: DNSP KoboToolbox",
@@ -442,4 +443,5 @@ plot_gantt <- ggplot(df_main_dates) +
   )
 
 plot_gantt
+
 ```
