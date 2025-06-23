@@ -11,10 +11,10 @@ project:
   type: website
 
 website:
-  title: "DNSP PES 2026"
+  title: "Direcção Nacional de Saúde Pública"
   navbar:
-    logo: Images/emblem_moz_xsmall.png
-    background: "#FFF4E1"
+    logo: Images/emblem_moz_small.png
+    background: "#FFFFFF"
 
 format:
   html:
@@ -29,6 +29,7 @@ format:
               padding-right: 10px;
             }
           </style>
+    css: styles.css
 
 metadata-files:
   - _brand.yml
