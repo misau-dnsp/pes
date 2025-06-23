@@ -25,12 +25,13 @@ kobo_token(username = acct_kobo_con$username,
 
 # Create timestamps and Excel output file name
 dt <- now()
-formatted_dt <- format(dt, "%d/%m/%Y %H:%M")
-timestamp_str <- format(dt, "%Y-%m-%d_%Hh%Mm")
-file_name <- paste0("Dataout/pesoe_calendar_", timestamp_str, ".xlsx")
+dt_formatted_wb <- format(dt, "%d/%m/%Y %H:%M")
+dt_formatted_filename <- format(dt, "%Y-%m-%d_%Hh%Mm")
+filename_pesoe <- paste0("Dataout/pesoe_", dt_formatted_filename, ".xlsx")
+filename_pdf <- paste0("Dataout/pdf_", dt_formatted_filename, ".xlsx")
 
 # Variables required for PESOE
-main_vars_pesoe <- c(
+vars_pesoe <- c(
   "_index",
   "responsavel_programa",
   "objectivo_pess", 
@@ -54,7 +55,7 @@ main_vars_pesoe <- c(
 )
 
 # Variables required for Plano de Formação
-main_vars_pdf <- c(
+vars_pdf <- c(
   "_index",
   "responsavel_programa",
   "subactividade_descricao",
@@ -63,12 +64,13 @@ main_vars_pdf <- c(
   "subactividade_beneficiario",
   "subactividade_meta",
   "subactividade_local",
-  "financiamento_oe", #
-  "financiamento_prosaude", #
-  "financiamento_outro_total", #
+  "financiamento_oe",
+  "financiamento_prosaude",
+  "financiamento_outro_total",
   "calc_custo_total"
 )
 
+# Variables to take kobo label
 vars_to_label <- c("responsavel_programa", 
                    "responsavel_pf_ma", 
                    "subactividade_tipo", 
@@ -77,8 +79,8 @@ vars_to_label <- c("responsavel_programa",
                    "objectivo_pess", 
                    "subactividade_local")
 
-
-tbl_objectivos_esp <- tibble::tibble(
+# PES activity map for recoding
+mapa_objectivos_esp <- tibble::tibble(
   actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:20)),
   label = c(
     "Reduzir a morbi-mortalidade através da expansão e melhoria da Qualidade dos Cuidados e Serviços de Saúde Materna",
@@ -104,7 +106,8 @@ tbl_objectivos_esp <- tibble::tibble(
   )
 )
 
-financiamento_mapa <- c(
+# Financing source map for renaming
+mapa_financiador <- c(
   "fonte_banco_mundial" = "Banco Mundial",
   "fonte_cdc" = "CDC/COAG",
   "fonte_fdc" = "FDC",
@@ -158,7 +161,7 @@ df_codigos <- asset_df$main %>%
   group_by(`_index`) %>%
   slice_head(n = 1) %>%
   ungroup() %>% 
-  left_join(tbl_objectivos_esp, by = "actividade_principal") %>% 
+  left_join(mapa_objectivos_esp, by = "actividade_principal") %>% 
   group_by(responsavel_programa) %>%
   mutate(
     atividade_id = dense_rank(actividade_principal),
@@ -172,7 +175,7 @@ df_codigos <- asset_df$main %>%
          codigo_actividade,
          codigo_subactividade)
 
-rm(tbl_objectivos_esp)
+rm(mapa_objectivos_esp)
 
 
 # MUNGE GEOTARGET -----------------------------------------------------
@@ -275,14 +278,14 @@ df_calendar_duracao <- asset_df$tbl_datas_impl %>%
   group_by(`_parent_index`) %>% 
   summarize(duracao_dias = sum(duracao_dias, na.rm = TRUE), .groups = "drop")
 
-rm(full_year, month_week_levels, df_calendar_long, full_grid)
+rm(full_year, month_week_levels, df_calendar_long, full_grid, parent_ids)
 
 
 # CREATE PESOE--------------------------------------------------------------
 
 output_pesoe <- asset_df$main %>%
   # Subset variables and convert values to labels
-  select(any_of(main_vars_pesoe)) %>%
+  select(any_of(vars_pesoe)) %>%
   mutate(
     across(any_of(vars_to_label), as_factor)
   ) %>% 
@@ -347,7 +350,7 @@ df_financiador <- asset_df$tbl_financiamento_outro %>%
         codes <- str_split(codes_str, "\\s+")[[1]]
         
         # Map known codes
-        mapped <- financiamento_mapa[codes[codes %in% names(financiamento_mapa)]]
+        mapped <- mapa_financiador[codes[codes %in% names(mapa_financiador)]]
         
         # Add 'outros' text if present
         if ("fonte_outros" %in% codes) {
@@ -369,7 +372,7 @@ df_financiador <- asset_df$tbl_financiamento_outro %>%
 output_pdf <- asset_df$main %>%
   filter(subactividade_tipo == "formacao_capacitacao") %>% 
   # Subset variables and convert values to labels
-  select(any_of(main_vars_pdf)) %>%
+  select(any_of(vars_pdf)) %>%
   arrange(responsavel_programa) %>% 
   mutate(
     across(any_of(vars_to_label), as_factor),
@@ -395,21 +398,15 @@ output_pdf <- asset_df$main %>%
   )
 
 
-# CREATE & WRITE OUTPUT TO DISK -----------------------------------------------------------
+# DEVELOP OUTPUT -----------------------------------------------------------
 
 # Create base workbook
 wb <- createWorkbook()
 
 # Create "Info" tab showing timestamp
 addWorksheet(wb, "Info")
-writeData(wb, sheet = "Info", x = "Criado no dia:", startCol = 1, startRow = 1)
-writeData(wb, sheet = "Info", x = formatted_dt, startCol = 2, startRow = 1)
-
-# Create "Calendario" tab with main content
-addWorksheet(wb, "Calendario")
-
-# First write unformatted data
-writeData(wb, sheet = "Calendario", x = df, startCol = 1, startRow = 1)
+addWorksheet(wb, "PESOE")
+addWorksheet(wb, "PDF")
 
 # Create styles
 style_wrap <- createStyle(
@@ -428,41 +425,55 @@ style_x <- createStyle(
   textDecoration = NULL   # No bold
 )
 
-# Apply styling
+# Write "Info" content
+writeData(wb, sheet = "Info", x = "Criado no dia:", startCol = 1, startRow = 1)
+writeData(wb, sheet = "Info", x = dt_formatted_wb, startCol = 2, startRow = 1)
+
+# Write "PESOE" content
+writeData(wb, sheet = "PESOE", x = output_pesoe, startCol = 1, startRow = 1)
+
+# Style "PESOE" content
 setColWidths(
-  wb, sheet = "Calendario",
-  cols = 1:ncol(df),
+  wb, sheet = "PESOE",
+  cols = 1:ncol(output_pesoe),
   widths = "auto"
 )
 
 addStyle(
-  wb, sheet = "Calendario", style = style_centered,
-  rows = 1:(nrow(df) + 1),  # +1 to include header
+  wb, sheet = "PESOE", style = style_centered,
+  rows = 1:(nrow(output_pesoe) + 1),  # +1 to include header
   cols = 1,                           # Column 2 = "n"
   gridExpand = TRUE
 )
 
 addStyle(
-  wb, sheet = "Calendario", style = style_wrap,
-  rows = 1:(nrow(df) + 1),  # Includes header row
+  wb, sheet = "PESOE", style = style_wrap,
+  rows = 1:(nrow(output_pesoe) + 1),  # Includes header row
   cols = c(2, 4),
   gridExpand = TRUE
 )
 
 # Set cells to receive style_x
-data_range <- df[, -1] # Exclude first column (_parent_index or label column)
+data_range <- output_pesoe[, -1] # Exclude first column (_parent_index or label column)
 
 for (col_index in seq_along(data_range)) {
   col_letter <- int2col(col_index + 1) # +1 because first column is not styled
   rows <- which(data_range[[col_index]] == "x") + 1 # +1 because of header row
   if (length(rows) > 0) {
     addStyle(
-      wb, sheet = "Calendario", style = style_x,
+      wb, sheet = "PESOE", style = style_x,
       rows = rows, cols = col_index + 1,
       gridExpand = FALSE, stack = TRUE
     )
   }
 }
 
+# Write "PESOE" content
+writeData(wb, sheet = "PDF", x = output_pdf, startCol = 1, startRow = 1)
+
+
+# WRITE OUTPUT ----------------------------------------------------------
+
 # Save Excel workbook to disc
-saveWorkbook(wb, file = file_name, overwrite = TRUE)
+saveWorkbook(wb, file = filename_pesoe, overwrite = TRUE)
+
