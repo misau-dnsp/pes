@@ -15,6 +15,7 @@ library(scales)
 
 # DEFINE GLOBAL VARIABLES ---------------------------------------------------------
 
+# Kobo connection
 acct_kobo <- "kobo-jlara"
 acct_kobo_con <- get_account(name = acct_kobo)
 
@@ -22,6 +23,13 @@ kobo_token(username = acct_kobo_con$username,
            password = acct_kobo_con$password,
            url = acct_kobo_con$url)
 
+# Create timestamps and Excel output file name
+dt <- now()
+formatted_dt <- format(dt, "%d/%m/%Y %H:%M")
+timestamp_str <- format(dt, "%Y-%m-%d_%Hh%Mm")
+file_name <- paste0("Dataout/pesoe_calendar_", timestamp_str, ".xlsx")
+
+# Create variable vector objects
 main_vars <- c(
   "_index",
   "responsavel_programa",
@@ -81,9 +89,6 @@ tbl_objectivos_esp <- tibble::tibble(
 
 
 # LOAD KOBO DATA ----------------------------------------------------------
-
-# timestamp for indicating data of data pull
-dt <- now()
 
 # fetch kobo assets using account credentials
 assets <- kobo_asset_list()
@@ -193,7 +198,7 @@ full_year <- tibble(
   distinct(month_week, .keep_all = TRUE) %>%
   arrange(dates)
 
-# Create sequenced vector based on calendar
+# Create sequenced calendar vector
 month_week_levels <- full_year$month_week
 
 # Identify calendar weeks where subactivity occurs
@@ -211,7 +216,7 @@ df_calendar_long <- asset_df$tbl_datas_impl %>%
   distinct(`_parent_index`, month_week) %>%
   mutate(value = "x")
 
-# Extract unique parent indexes from your data
+# Extract unique parent indexes from kobo data
 parent_ids <- asset_df$tbl_datas_impl %>%
   distinct(`_parent_index`) %>%
   pull()
@@ -294,22 +299,25 @@ df <- asset_df$main %>%
   )
 
 
-
-
 # WRITE TO DISK -----------------------------------------------------------
 
+# Create base workbook
 wb <- createWorkbook()
+
+# Create "Info" tab showing timestamp
+addWorksheet(wb, "Info")
+writeData(wb, sheet = "Info", x = "Criado no dia:", startCol = 1, startRow = 1)
+writeData(wb, sheet = "Info", x = formatted_dt, startCol = 2, startRow = 1)
+
+# Create "Calendario" tab with main content
 addWorksheet(wb, "Calendario")
 
-# Write data without formatting first
+# First write unformatted data
 writeData(wb, sheet = "Calendario", x = df, startCol = 1, startRow = 1)
 
-# Style for "x" cells (light green background, bold text)
-style_x <- createStyle(
-  fgFill = "#92D050",       # Light green fill
-  halign = "center",        # Horizontal center
-  valign = "center",        # Vertical center
-  textDecoration = NULL     # No bold
+# Create styles
+style_wrap <- createStyle(
+  wrapText = TRUE
 )
 
 style_centered <- createStyle(
@@ -317,26 +325,20 @@ style_centered <- createStyle(
   valign = "center"
 )
 
-style_wrap <- createStyle(
-  wrapText = TRUE
+style_x <- createStyle(
+  fgFill = "#92D050",
+  halign = "center",
+  valign = "center",
+  textDecoration = NULL   # No bold
 )
 
-
-# Apply style to all cells with value "x"
-# Exclude first column (_parent_index or label column)
-data_range <- df[, -1]
-
-for (col_index in seq_along(data_range)) {
-  col_letter <- int2col(col_index + 1) # +1 because first column is not styled
-  rows <- which(data_range[[col_index]] == "x") + 1 # +1 because of header row
-  if (length(rows) > 0) {
-    addStyle(
-      wb, sheet = "Calendario", style = style_x,
-      rows = rows, cols = col_index + 1,
-      gridExpand = FALSE, stack = TRUE
-    )
-  }
-}
+# Apply styling
+# Column width
+setColWidths(
+  wb, sheet = "Calendario",
+  cols = 1:ncol(df),
+  widths = "auto"
+)
 
 addStyle(
   wb, sheet = "Calendario", style = style_centered,
@@ -352,25 +354,20 @@ addStyle(
   gridExpand = TRUE
 )
 
-setColWidths(
-  wb, sheet = "Calendario",
-  cols = 1:ncol(df),
-  widths = "auto"
-)
+# Set cells to receive style_x styling
+data_range <- df[, -1] # Exclude first column (_parent_index or label column)
 
-# Write a new tab include creation date info
-formatted_dt <- format(dt, "%d/%m/%Y %H:%M")
+for (col_index in seq_along(data_range)) {
+  col_letter <- int2col(col_index + 1) # +1 because first column is not styled
+  rows <- which(data_range[[col_index]] == "x") + 1 # +1 because of header row
+  if (length(rows) > 0) {
+    addStyle(
+      wb, sheet = "Calendario", style = style_x,
+      rows = rows, cols = col_index + 1,
+      gridExpand = FALSE, stack = TRUE
+    )
+  }
+}
 
-addWorksheet(wb, "Info")
-
-writeData(wb, sheet = "Info", x = "Criado no dia:", startCol = 1, startRow = 1)
-writeData(wb, sheet = "Info", x = formatted_dt, startCol = 2, startRow = 1)
-
-# Format dt for filename (e.g. 2024-06-20_14h30m)
-timestamp_str <- format(dt, "%Y-%m-%d_%Hh%Mm")
-
-# Create the file name
-file_name <- paste0("Dataout/pesoe_calendar_", timestamp_str, ".xlsx")
-
-# Save the workbook
+# Save Excel workbook to disc
 saveWorkbook(wb, file = file_name, overwrite = TRUE)
