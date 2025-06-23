@@ -1,5 +1,5 @@
 
-# ATTACH DEPENDENCIES ---------------------------------------------------------
+# DEPENDENCIES ---------------------------------------------------------
 
 library(tidyverse)
 library(ggthemes)
@@ -13,7 +13,7 @@ library(openxlsx)
 library(scales)
 
 
-# DEFINE GLOBAL VARIABLES ---------------------------------------------------------
+# GLOBAL VARIABLES ---------------------------------------------------------
 
 # Kobo connection
 acct_kobo <- "kobo-jlara"
@@ -29,8 +29,8 @@ formatted_dt <- format(dt, "%d/%m/%Y %H:%M")
 timestamp_str <- format(dt, "%Y-%m-%d_%Hh%Mm")
 file_name <- paste0("Dataout/pesoe_calendar_", timestamp_str, ".xlsx")
 
-# Create variable vector objects
-main_vars <- c(
+# Variables required for PESOE
+main_vars_pesoe <- c(
   "_index",
   "responsavel_programa",
   "objectivo_pess", 
@@ -53,12 +53,29 @@ main_vars <- c(
   "calc_financiamento_lacuna"
 )
 
-columns_to_label <- c("responsavel_programa", 
-                      "responsavel_pf_ma", 
-                      "subactividade_tipo", 
-                      "objectivo_especifico", 
-                      "objectivo_pess", 
-                      "subactividade_local")
+# Variables required for Plano de Formação
+main_vars_pdf <- c(
+  "_index",
+  "responsavel_programa",
+  "subactividade_descricao",
+  "actividade_principal_descricao",
+  "formacao_modalidade",
+  "subactividade_beneficiario",
+  "subactividade_meta",
+  "subactividade_local",
+  "financiamento_oe", #
+  "financiamento_prosaude", #
+  "financiamento_outro_total", #
+  "calc_custo_total"
+)
+
+vars_to_label <- c("responsavel_programa", 
+                   "responsavel_pf_ma", 
+                   "subactividade_tipo", 
+                   "formacao_modalidade",
+                   "objectivo_especifico", 
+                   "objectivo_pess", 
+                   "subactividade_local")
 
 
 tbl_objectivos_esp <- tibble::tibble(
@@ -87,8 +104,22 @@ tbl_objectivos_esp <- tibble::tibble(
   )
 )
 
+financiamento_mapa <- c(
+  "fonte_banco_mundial" = "Banco Mundial",
+  "fonte_cdc" = "CDC/COAG",
+  "fonte_fdc" = "FDC",
+  "fonte_fnuap" = "FNUAP",
+  "fonte_fundo_global" = "Fundo Global",
+  "fonte_gavi" = "GAVI",
+  "fonte_oim" = "OIM",
+  "fonte_oms" = "OMS",
+  "fonte_pepfar_1" = "PEPFAR",
+  "fonte_prosaude" = "ProSaude",
+  "fonte_rti" = "RTI",
+  "fonte_unicef" = "UNICEF"
+)
 
-# LOAD KOBO DATA ----------------------------------------------------------
+# LOAD KOBO ASSETS ----------------------------------------------------------
 
 # fetch kobo assets using account credentials
 assets <- kobo_asset_list()
@@ -110,14 +141,14 @@ rm(assets, asset_list, uid)
 dm_draw(asset_df)
 
 
-# MUNGE DF CODES ----------------------------------------------------
+# MUNGE CODES ----------------------------------------------------
 
 # Create dataframe for activity and subactivity codes
 df_codigos <- asset_df$main %>% 
   select(`_index`,
          responsavel_programa,
          starts_with("objectivo_especifico_objective")) %>% 
-  mutate(across(any_of(columns_to_label), as_factor)) %>% 
+  mutate(across(any_of(vars_to_label), as_factor)) %>% 
   pivot_longer(cols = !c(`_index`,
                          responsavel_programa),
                names_to = "actividade_principal",
@@ -144,7 +175,7 @@ df_codigos <- asset_df$main %>%
 rm(tbl_objectivos_esp)
 
 
-# MUNGE DF GEOTARGET -----------------------------------------------------
+# MUNGE GEOTARGET -----------------------------------------------------
 
 df_metas <- asset_df$tbl_geografia_impl %>% 
   # Pivot geographic target table wide
@@ -184,7 +215,7 @@ df_metas <- asset_df$tbl_geografia_impl %>%
          localizacao)
 
 
-# MUNGE DF CALENDAR ------------------------------------------
+# MUNGE CALENDAR & DURATION ------------------------------------------
 
 # Create tibble of the entire year in case subactivities don't cover entire period
 full_year <- tibble(
@@ -227,7 +258,7 @@ full_grid <- tidyr::crossing(
   month_week = factor(month_week_levels, levels = month_week_levels)
 )
 
-# Finalize calendar
+# Finalize implementation calendar
 df_calendario <- full_grid %>%
   left_join(df_calendar_long, by = c("_parent_index", "month_week")) %>%
   mutate(value = replace_na(value, "")) %>%
@@ -237,16 +268,23 @@ df_calendario <- full_grid %>%
   ) %>%
   arrange(`_parent_index`)
 
+# Create subactivity duration used in PdF
+df_calendar_duracao <- asset_df$tbl_datas_impl %>%
+  mutate(duracao_dias = interval(ymd(subactividade_data_inicio), ymd(subactividade_data_fim)) %/% days(1)) %>% 
+  select(`_parent_index`, duracao_dias) %>% 
+  group_by(`_parent_index`) %>% 
+  summarize(duracao_dias = sum(duracao_dias, na.rm = TRUE), .groups = "drop")
+
 rm(full_year, month_week_levels, df_calendar_long, full_grid)
 
 
-# JOIN DF & CLEAN--------------------------------------------------------------
+# CREATE PESOE--------------------------------------------------------------
 
-df <- asset_df$main %>%
+output_pesoe <- asset_df$main %>%
   # Subset variables and convert values to labels
-  select(any_of(main_vars)) %>%
+  select(any_of(main_vars_pesoe)) %>%
   mutate(
-    across(any_of(columns_to_label), as_factor)
+    across(any_of(vars_to_label), as_factor)
   ) %>% 
   # Join codigos and metas
   left_join(df_codigos) %>% 
@@ -299,7 +337,65 @@ df <- asset_df$main %>%
   )
 
 
-# WRITE TO DISK -----------------------------------------------------------
+# CREATE PDF -------------------------------------------------------------
+
+df_financiador <- asset_df$tbl_financiamento_outro %>% 
+  mutate(
+    financiador = pmap_chr(
+      list(financiamento_outro_especificacao, financiamento_outro_especificacao_),
+      function(codes_str, outros_val) {
+        codes <- str_split(codes_str, "\\s+")[[1]]
+        
+        # Map known codes
+        mapped <- financiamento_mapa[codes[codes %in% names(financiamento_mapa)]]
+        
+        # Add 'outros' text if present
+        if ("fonte_outros" %in% codes) {
+          mapped <- c(mapped, outros_val)
+        }
+        
+        # Collapse to comma-separated string
+        paste(mapped, collapse = ", ")
+      }
+    )
+  ) %>%
+  group_by(`_parent_index`) %>%
+  summarise(
+    financiador = paste(unique(financiador), collapse = ", "),
+    .groups = "drop"
+  )
+
+
+output_pdf <- asset_df$main %>%
+  filter(subactividade_tipo == "formacao_capacitacao") %>% 
+  # Subset variables and convert values to labels
+  select(any_of(main_vars_pdf)) %>%
+  arrange(responsavel_programa) %>% 
+  mutate(
+    across(any_of(vars_to_label), as_factor),
+    n = row_number(),
+  ) %>% 
+  left_join(df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
+  left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>% 
+  left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
+  left_join(df_financiador, by = join_by(`_index` == `_parent_index`)) %>% 
+  select(
+    n,
+    subactividade_descricao,
+    actividade_principal_descricao,
+    formacao_modalidade,
+    responsavel_programa,
+    subactividade_beneficiario,
+    duracao_dias,
+    subactividade_meta,
+    localizacao,
+    matches("_[0-9]{2}$"),
+    calc_custo_total,
+    financiador
+  )
+
+
+# CREATE & WRITE OUTPUT TO DISK -----------------------------------------------------------
 
 # Create base workbook
 wb <- createWorkbook()
@@ -333,7 +429,6 @@ style_x <- createStyle(
 )
 
 # Apply styling
-# Column width
 setColWidths(
   wb, sheet = "Calendario",
   cols = 1:ncol(df),
@@ -354,7 +449,7 @@ addStyle(
   gridExpand = TRUE
 )
 
-# Set cells to receive style_x styling
+# Set cells to receive style_x
 data_range <- df[, -1] # Exclude first column (_parent_index or label column)
 
 for (col_index in seq_along(data_range)) {
