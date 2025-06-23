@@ -1,5 +1,5 @@
 
-# DEPENDENCIES ---------------------------------------------------------
+# LOAD DEPENDENCIES ---------------------------------------------------------
 
 library(tidyverse)
 library(ggthemes)
@@ -13,7 +13,7 @@ library(openxlsx)
 library(scales)
 
 
-# GLOBAL VARIABLES ---------------------------------------------------------
+# DEFINE GLOBAL VARIABLES ---------------------------------------------------------
 
 # Kobo connection
 acct_kobo <- "kobo-jlara"
@@ -27,8 +27,7 @@ kobo_token(username = acct_kobo_con$username,
 dt <- now()
 dt_formatted_wb <- format(dt, "%d/%m/%Y %H:%M")
 dt_formatted_filename <- format(dt, "%Y-%m-%d_%Hh%Mm")
-filename_pesoe <- paste0("Dataout/pesoe_", dt_formatted_filename, ".xlsx")
-filename_pdf <- paste0("Dataout/pdf_", dt_formatted_filename, ".xlsx")
+filename_output <- paste0("Dataout/dnsp_pes_", dt_formatted_filename, ".xlsx")
 
 # Variables required for PESOE
 vars_pesoe <- c(
@@ -281,7 +280,7 @@ df_calendar_duracao <- asset_df$tbl_datas_impl %>%
 rm(full_year, month_week_levels, df_calendar_long, full_grid, parent_ids)
 
 
-# CREATE PESOE--------------------------------------------------------------
+# CREATE PESOE DF--------------------------------------------------------------
 
 output_pesoe <- asset_df$main %>%
   # Subset variables and convert values to labels
@@ -340,7 +339,7 @@ output_pesoe <- asset_df$main %>%
   )
 
 
-# CREATE PDF -------------------------------------------------------------
+# CREATE PDF DF -------------------------------------------------------------
 
 df_financiador <- asset_df$tbl_financiamento_outro %>% 
   mutate(
@@ -377,11 +376,23 @@ output_pdf <- asset_df$main %>%
   mutate(
     across(any_of(vars_to_label), as_factor),
     n = row_number(),
+    financiamento_oe = if_else(financiamento_oe == "0", NA_character_, "OE"),
+    financiamento_prosaude = if_else(financiamento_prosaude == "0", NA_character_, "ProSaude")
   ) %>% 
   left_join(df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
   left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>% 
   left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
   left_join(df_financiador, by = join_by(`_index` == `_parent_index`)) %>% 
+  mutate(
+    financiador = pmap_chr(
+      list(financiador, financiamento_oe, financiamento_prosaude),
+      function(f, oe, prosaude) {
+        parts <- c(f, oe, prosaude)
+        parts <- parts[!is.na(parts) & parts != ""]
+        if (length(parts) == 0) NA_character_ else paste(parts, collapse = ", ")
+      }
+    )
+  ) %>% 
   select(
     n,
     subactividade_descricao,
@@ -395,10 +406,11 @@ output_pdf <- asset_df$main %>%
     matches("_[0-9]{2}$"),
     calc_custo_total,
     financiador
-  )
+  ) %>% 
+  glimpse()
 
 
-# DEVELOP OUTPUT -----------------------------------------------------------
+# CREATE OUTPUT -----------------------------------------------------------
 
 # Create base workbook
 wb <- createWorkbook()
@@ -426,22 +438,41 @@ style_x <- createStyle(
 )
 
 # Write "Info" content
-writeData(wb, sheet = "Info", x = "Criado no dia:", startCol = 1, startRow = 1)
+writeData(wb, sheet = "Info", x = "Dados retirados da KoboToolbox em:", startCol = 1, startRow = 1)
 writeData(wb, sheet = "Info", x = dt_formatted_wb, startCol = 2, startRow = 1)
 
 # Write "PESOE" content
 writeData(wb, sheet = "PESOE", x = output_pesoe, startCol = 1, startRow = 1)
 
-# Style "PESOE" content
+# Style content
+setColWidths(
+  wb, sheet = "Info",
+  cols = 1:2,
+  widths = "auto"
+)
+
 setColWidths(
   wb, sheet = "PESOE",
   cols = 1:ncol(output_pesoe),
   widths = "auto"
 )
 
+setColWidths(
+  wb, sheet = "PDF",
+  cols = 1:ncol(output_pdf),
+  widths = "auto"
+)
+
 addStyle(
   wb, sheet = "PESOE", style = style_centered,
   rows = 1:(nrow(output_pesoe) + 1),  # +1 to include header
+  cols = 1,                           # Column 2 = "n"
+  gridExpand = TRUE
+)
+
+addStyle(
+  wb, sheet = "PDF", style = style_centered,
+  rows = 1:(nrow(output_pdf) + 1),  # +1 to include header
   cols = 1,                           # Column 2 = "n"
   gridExpand = TRUE
 )
@@ -454,14 +485,29 @@ addStyle(
 )
 
 # Set cells to receive style_x
-data_range <- output_pesoe[, -1] # Exclude first column (_parent_index or label column)
+data_range_pesoe <- output_pesoe[, -1] # Exclude first column (_parent_index or label column)
 
-for (col_index in seq_along(data_range)) {
+for (col_index in seq_along(data_range_pesoe)) {
   col_letter <- int2col(col_index + 1) # +1 because first column is not styled
-  rows <- which(data_range[[col_index]] == "x") + 1 # +1 because of header row
+  rows <- which(data_range_pesoe[[col_index]] == "x") + 1 # +1 because of header row
   if (length(rows) > 0) {
     addStyle(
       wb, sheet = "PESOE", style = style_x,
+      rows = rows, cols = col_index + 1,
+      gridExpand = FALSE, stack = TRUE
+    )
+  }
+}
+
+# Set cells to receive style_x
+data_range_pdf <- output_pdf[, -1] # Exclude first column (_parent_index or label column)
+
+for (col_index in seq_along(data_range_pdf)) {
+  col_letter <- int2col(col_index + 1) # +1 because first column is not styled
+  rows <- which(data_range_pdf[[col_index]] == "x") + 1 # +1 because of header row
+  if (length(rows) > 0) {
+    addStyle(
+      wb, sheet = "PDF", style = style_x,
       rows = rows, cols = col_index + 1,
       gridExpand = FALSE, stack = TRUE
     )
@@ -475,5 +521,7 @@ writeData(wb, sheet = "PDF", x = output_pdf, startCol = 1, startRow = 1)
 # WRITE OUTPUT ----------------------------------------------------------
 
 # Save Excel workbook to disc
-saveWorkbook(wb, file = filename_pesoe, overwrite = TRUE)
+saveWorkbook(wb, file = filename_output, overwrite = TRUE)
+
+
 
