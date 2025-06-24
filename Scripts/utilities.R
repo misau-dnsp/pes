@@ -42,7 +42,8 @@ gen_tbl_activities <- function(df, breakdown = "subactividade_tipo") {
         .names = "{.col}"
       ),
       .groups = "drop"
-    )
+    ) %>% 
+    arrange(desc(calc_custo_total))
   
   df_total <- df %>%
     summarise(
