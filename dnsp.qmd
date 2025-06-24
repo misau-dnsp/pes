@@ -85,7 +85,7 @@ mutate(
     names_to = "data_tipo",
     values_to = "data"
   ) %>% 
-  arrange(responsavel_programa, desc(data_inicio)) %>%
+  arrange(data_inicio) %>%
   mutate(
     subactividade_titulo = factor(
       subactividade_titulo,
@@ -399,6 +399,8 @@ tbl_financiamento_financiador %>%
   )
 
 ```
+
+### Calendário de Execução
 
 A fim de monitorar a execução atempada das actividades planificadas ao longo de 2026, a equipa de M&A da UMA criou uma diagrama Gantt que os gestores de programas e a direcção podem utilizar para verificar o estado das actividades.  Esta visualização será actualizada cada mes ou trimestre (periodicadade por defenir) com base nas informações fornecidas pelos responsáveis de M&A da área do programa em ligação com a UMA
 
