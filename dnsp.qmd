@@ -1,5 +1,5 @@
 ---
-title: "Plano Económico Social 2026"
+title: "2026 Plano Económico Social - DNSP"
 execute:
   echo: false
   warning: false
@@ -63,7 +63,7 @@ df_dates <- asset_df$tbl_datas_impl
 df_main_dates <- asset_df %>%
   dm_flatten_to_tbl(.start = tbl_datas_impl,
                     .join = left_join) %>% 
-    mutate(across(all_of(columns_to_label), as_factor)) %>% 
+  mutate(across(all_of(columns_to_label), as_factor)) %>% 
   select(
     responsavel_programa,
     subactividade_tipo,
@@ -71,27 +71,27 @@ df_main_dates <- asset_df %>%
     subactividade_data_inicio,
     subactividade_data_fim
   ) %>% 
-mutate(
-  #responsavel_programa = str_to_upper(responsavel_programa),
-  data_inicio = subactividade_data_inicio,
-  subactividade_titulo = subactividade_titulo |> 
-    str_trunc(width = 100, ellipsis = "...") |> 
-    str_wrap(width = 75),
-  subactividade_titulo = factor(subactividade_titulo, levels = unique(subactividade_titulo)),
-  subactividade_programa_conc = paste0(subactividade_titulo, " (", responsavel_programa, ")")
-  ) %>% 
-  pivot_longer(
-    cols = contains("_data_"),
-    names_to = "data_tipo",
-    values_to = "data"
-  ) %>% 
-  arrange(data_inicio) %>%
   mutate(
-    subactividade_titulo = factor(
-      subactividade_titulo,
-      levels = unique(subactividade_titulo)
-    )
-  )
+    #responsavel_programa = str_to_upper(responsavel_programa),
+    data_inicio = subactividade_data_inicio,
+    subactividade_titulo = subactividade_titulo %>% str_trunc(width = 100, ellipsis = "...") %>% str_wrap(width = 75),
+    subactividade_titulo = factor(subactividade_titulo, levels = unique(subactividade_titulo)),
+    subactividade_programa_conc = paste0(subactividade_titulo, " (", responsavel_programa, ")"),
+    subactividade_programa_conc = fct_reorder(subactividade_programa_conc, subactividade_data_inicio, .desc = TRUE),
+    subactividade_data_fim_corrigida = if_else(
+      subactividade_data_inicio == subactividade_data_fim,
+      subactividade_data_fim + 1,  # Add 1 day
+      subactividade_data_fim
+    ))
+
+ordering_lookup <- df_main_dates %>%
+  group_by(subactividade_programa_conc) %>%
+  summarise(min_start = min(subactividade_data_inicio, na.rm = TRUE), .groups = "drop")
+
+# Join back and reorder the factor
+df_main_dates <- df_main_dates %>%
+  left_join(ordering_lookup, by = "subactividade_programa_conc") %>%
+  mutate(subactividade_programa_conc = fct_reorder(subactividade_programa_conc, min_start, .desc = TRUE))  # or .desc = FALSE for earliest on top
 
 # df main & fianciamento_outro for tables
 df_main_financ <- asset_df %>%
@@ -159,9 +159,12 @@ val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>%
 
 ```
 
-### Sumário Executivo
+### Sumário da Actividades
 
-Como parte do Plano Económico e Social (PES) do ano 2026, a Direcção Nacional de Saúde Pública (DNSP) está a introduzir novas tecnologias para a recolha, análise e monitoria da execução das actividades planificadas. A intenção é de automatizar a gestão dos dados do PES e, desta forma, melhorar a planificação, monitoria, e execução em si. Até à data de criação do presente relatório (`r dt`), o pessoal do programa DNSP submetiu no KoboToolbox informações para `r val_n_activities` subactividades com um custo total de `r val_cost_activities` MT.
+O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das subactividades dos seus vários programas (como Nutrição, PAV, COESP, entre outros). Cada programa propõe as suas intervenções e, em articulação com a liderança da DNSP assegura que as propostas estejam alinhadas com as prioridades nacionais, identifique sinergias entre programas e oriente eventuais revisões para promover maior integração e impacto do Plano. Ao longo do ano, a DNSP acompanha a execução do PES utilizando as subactividades como base para monitorar a implementação e a utilização de recursos.
+
+Até ao dia em que este relatório foi elaborado (`r dt`), o pessoal do programa da DNSP tinha proposto um total de `r val_n_activities` actividades para o ano de 2026.  O custo total dessas actividades, de acordo com as estimativas de custos fornecidas pelos programas que as propõem, é de `r val_cost_activities` MT. A tabela abaixo resume o número e o custo das subactividades propostas por cada programa do DNSP que introduziu dados na plataforma KoboToolbox utilizada para o planeamento do PES do DNSP. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total estimado de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O programa com o maior número de actividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]`, com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)` subactividades.
+
 
 ```{r plot-programa-table}
 
@@ -175,7 +178,8 @@ tbl_activities_programa %>%
   # General table options
   tab_options(
     table.font.names = c("Nunito Sans", "sans-serif"),
-    table.align = "left"
+    table.align = "left",
+    table.width = pct(80)
   ) %>%
  
   # Column spanner
@@ -249,6 +253,9 @@ tbl_activities_programa %>%
 
 ```
 
+A tabela abaixo apresenta um resumo das subactividades propostas organizadas por tipo de intervenção. Para cada tipo de subactividade, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O tipo de subactividade com o maior orçamento total proposto é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"])]`, com um custo estimado de `r scales::comma(max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O tipo com o maior número de actividades propostas é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"])]`, com `r max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE)` subactividades.
+
+
 ```{r plot-type-table}
 
 columns_gt_numeric <- tbl_activities_type %>%
@@ -261,7 +268,8 @@ tbl_activities_type %>%
   # General table options
   tab_options(
     table.font.names = c("Nunito Sans", "sans-serif"),
-    table.align = "left"
+    table.align = "left",
+    table.width = pct(80)
   ) %>%
   
   # Column spanner
@@ -334,6 +342,11 @@ tbl_activities_type %>%
   )
 
 ```
+
+
+Visualizar o financiamento proposto permite compreender de forma imediata como diferentes fontes estão a contribuir para a implementação das actividades planificadas no PES. A tabela abaixo apresenta o número de contribuições feitas por cada financiador (ou seja, quantas vezes essa fonte foi indicada para financiar as subactividade) e o respectivo montante total previsto. Esta informação ajuda a identificar desequilíbrios, dependências e oportunidades de reprogramação ou mobilização de fundos. Foram registadas `r sum(tbl_financiamento_financiador$n[tbl_financiamento_financiador$financiador_detalhe != "Total"], na.rm = TRUE)` contribuições de financiamento. Os três principais financiadores em termos de montante são: `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][1]`, `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][2]` e `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][3]`. A fonte com o menor volume de financiamento total até agora é `r tbl_financiamento_financiador$financiador_detalhe[which.min(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"])]`, com apenas `r scales::comma(min(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT atribuídos.
+
+
 ```{r plot-financiamento-table}
 
 columns_gt_numeric <- tbl_financiamento_financiador %>%
@@ -345,7 +358,8 @@ tbl_financiamento_financiador %>%
     # General table options
   tab_options(
     table.font.names = c("Nunito Sans", "sans-serif"),
-    table.align = "left"
+    table.align = "left",
+    table.width = pct(40)
   ) %>%
   
   
@@ -402,70 +416,47 @@ tbl_financiamento_financiador %>%
 
 ### Calendário de Execução
 
-A fim de monitorar a execução atempada das actividades planificadas ao longo de 2026, a equipa de M&A da UMA criou uma diagrama Gantt que os gestores de programas e a direcção podem utilizar para verificar o estado das actividades.  Esta visualização será actualizada cada mes ou trimestre (periodicadade por defenir) com base nas informações fornecidas pelos responsáveis de M&A da área do programa em ligação com a UMA
+A Unidade de Monitoria e Avaliação (UMA) da DNSP criou o diagrama de Gantt abaixo, que pode ser utilizado para compreender a coerência do conjunto de actividades propostas.  Uma vez concluído, este gráfico pode servir de base para acompanhar a execução atempada das actividades da DNSP.  Como parte da estratégia global de monitoria, a UMA pretende coordenar com os contrapartes de M&A ao nível dos programas para actualizar este gráfico em cada trimestre, a fim de mostrar o que foi concluído, está em curso, ou ainda pendente, reprogramado ou cancelado.
 
 ```{r plot-activity-gantt, fig.width=12, fig.height=4, fig.align='center', fig.bg="transparent"}
 
 # plot activity gantt chart
 
-cores_programa <- c(
-  "Nutrição"           = "#007A33",  # health-green
-  "PAV"                = "#2780e3",  # primary-blue
-  "COESP"              = "#C8102E",  # primary-red
-  "CSP"                = "#00ADEF",  # sky-blue
-  "CSP-APS"            = "#FFD100",  # sun-yellow
-  "DVS"                = "#FFB81C",  # corn-gold
-  "DNT"                = "#8B5E3C",  # burnt-brown
-  "DPCD"               = "#1C2826",  # midnight-black
-  "DSA"                = "#005F73",  # custom: dark teal
-  "DSF"                = "#0A9396",  # custom: aqua steel
-  "LNHAA"              = "#94D2BD",  # custom: light mint
-  "MD"                 = "#F4A261",  # custom: desert orange
-  "PNC ITS-HIV/SIDA"   = "#E76F51",  # custom: coral red
-  "PNCM"               = "#6A4C93",  # custom: royal purple
-  "PNCT"               = "#BC4749",  # custom: warm crimson
-  "PNSEAJ"             = "#E9C46A",  # custom: soft gold
-  "Saúde Mental"       = "#264653"   # custom: deep slate
-)
 
 plot_gantt <- ggplot(df_main_dates) +
-  geom_line(
-    aes(x = subactividade_programa_conc, y = data),
-    color = "#2780e3",     
+  geom_segment(
+    aes(
+      x = subactividade_programa_conc,
+      xend = subactividade_programa_conc,
+      y = subactividade_data_inicio,
+      yend = subactividade_data_fim_corrigida
+    ),
+    color = "#2780e3", 
     linewidth = 4,
-    lineend = "butt",
-    linejoin = "mitre"
+    lineend = "butt"
   ) +
   scale_y_date(
     date_breaks = "1 month",
     date_labels = "%m-%Y"
   ) +
   coord_flip() +
-  theme_fivethirtyeight() +
   labs(
     title = "Cronograma de Actividades PES 2026 (DNSP)",
     caption = "Fonte: DNSP KoboToolbox",
-    color = "Programa",
     x = NULL,
-    y = "Date"
+    y = NULL,
+    color = "Programa"
   ) +
+  theme_minimal(base_size = 13) +
   theme(
     plot.title = element_text(size = 15, face = "italic", hjust = 0),
     plot.caption = element_text(margin = margin(t = 10), size = 12, hjust = 1, face = "italic"),
     legend.position = "right",
-    legend.direction = "vertical",
-    axis.text.x = element_text(size = 13, angle = 45, hjust = 1),
-    axis.text.y = element_text(size = 13),
-    panel.spacing = unit(0.5, "lines"),
-    panel.grid.minor.x = element_blank(),
-    strip.background = element_rect(fill = "grey100", color = "grey20"),
-    strip.text = element_text(color = "grey20", 
-                              face = "bold", 
-                              size = 11,
-                              margin = margin(t = 3, b = 3)
-    )
+    axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 12)
   )
 
 plot_gantt
+
 
 ```

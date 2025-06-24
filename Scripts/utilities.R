@@ -80,3 +80,24 @@ gen_tbl_financiador <- function(df, breakdown = financiador_detalhe) {
         )
     )
 }
+
+cores_programa <- c(
+  "Nutrição"           = "#007A33",  # health-green
+  "PAV"                = "#2780e3",  # primary-blue
+  "COESP"              = "#C8102E",  # primary-red
+  "CSP"                = "#00ADEF",  # sky-blue
+  "CSP-APS"            = "#FFD100",  # sun-yellow
+  "DVS"                = "#FFB81C",  # corn-gold
+  "DNT"                = "#8B5E3C",  # burnt-brown
+  "DPCD"               = "#1C2826",  # midnight-black
+  "DSA"                = "#005F73",  # custom: dark teal
+  "DSF"                = "#0A9396",  # custom: aqua steel
+  "LNHAA"              = "#94D2BD",  # custom: light mint
+  "MD"                 = "#F4A261",  # custom: desert orange
+  "PNC ITS-HIV/SIDA"   = "#E76F51",  # custom: coral red
+  "PNCM"               = "#6A4C93",  # custom: royal purple
+  "PNCT"               = "#BC4749",  # custom: warm crimson
+  "PNSEAJ"             = "#E9C46A",  # custom: soft gold
+  "Saúde Mental"       = "#264653"   # custom: deep slate
+)
+

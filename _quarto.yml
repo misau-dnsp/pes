@@ -8,7 +8,7 @@
 #     toc: true
 #     toc-title: "Conteúdo"
 project:
-  type: website
+  type: default
 
 website:
   title: "Direcção Nacional de Saúde Pública"
