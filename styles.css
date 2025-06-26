@@ -1,8 +1,6 @@
 /* Style for the website title text */
-.navbar .navbar-brand span {
-  font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-style: bolder;
-  font-size: 2.0rem;        /* Larger text */
-  color: #373a3c;        /* Your preferred color */
-  font-weight: 600;         /* Optional: make slightly bolder */
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
 }
