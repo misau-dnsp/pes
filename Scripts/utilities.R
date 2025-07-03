@@ -148,3 +148,14 @@ add_missing_ttd_vars <- function(df) {
   
   return(df)
 }
+
+get_kobo_data <- function(form_id) {
+  url <- glue::glue("https://eu.kobotoolbox.org/api/v2/assets/{form_id}/data.json")
+  res <- httr::GET(url, httr::add_headers(Authorization = paste("Token", token)))
+  httr::stop_for_status(res)
+  data <- jsonlite::fromJSON(httr::content(res, "text"))$results
+  data <- jsonlite::flatten(data)
+  # Drop list-columns (Kobo repeat groups, media, etc.)
+  data <- data[ , !sapply(data, is.list)]
+  return(data)
+}

@@ -10,7 +10,7 @@ execute:
   warning: false
 ---
 
-```{r, results='hide'}
+```{r, load-dependencies, results='hide'}
 library(tidyverse)
 library(ggthemes)
 library(robotoolbox)
@@ -21,33 +21,43 @@ library(gt)
 library(glue)
 source("Scripts/utilities.R")
 
-acct_kobo <- "kobo-jlara"
-acct_kobo_con <- get_account(name = acct_kobo)
-
-kobo_token(username = acct_kobo_con$username,
-           password = acct_kobo_con$password,
-           url = acct_kobo_con$url)
+# acct_kobo <- "kobo-jlara"
+# acct_kobo_con <- get_account(name = acct_kobo)
+# 
+# kobo_token(username = acct_kobo_con$username,
+#            password = acct_kobo_con$password,
+#            url = acct_kobo_con$url)
 
 ```
 
+```{r load-kobo-creds}
+Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
+Sys.setenv(KOBOTOOLBOX_TOKEN = Sys.getenv("KOBO_TOKEN"))
+
+kobo_setup(
+  url = Sys.getenv("KOBOTOOLBOX_URL"),
+  token = Sys.getenv("KOBOTOOLBOX_TOKEN")
+)
+
+```
+
+
 ```{r load-kobo-data}
 
-# timestamp for indicating data of data pull
+# timestamp of data pull
 dt <- today()
 
-# fetch kobo assets using account credentials
 assets <- kobo_asset_list()
 
 uid <- assets %>%
   filter(name == "DNSP PES 2026 Final v3") %>%
-  pull(uid) %>%
-  first()
+  pull(uid) %>% first()
 
-asset_list <- kobo_asset(uid)
+asset <- kobo_asset(uid)
 
-asset_df <- kobo_submissions(asset_list)
+asset_df <- kobo_submissions(asset)
 
-rm(assets, asset_list, uid)
+rm(assets, asset, uid)
 
 ```
 
