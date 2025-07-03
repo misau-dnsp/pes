@@ -1,4 +1,4 @@
-.libPaths("~/R/library")  # ← Tell R where to look
+.libPaths("~/R/library")
 library(httr)
 library(jsonlite)
 library(glue)

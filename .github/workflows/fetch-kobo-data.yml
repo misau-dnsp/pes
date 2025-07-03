@@ -19,16 +19,22 @@ jobs:
       - name: Install R packages
         run: |
           mkdir -p ~/R/library
-          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"), lib = "~/R/library")'
+          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"), lib = "~/R/library", repos = "https://cloud.r-project.org")'
+          echo "Installed packages:"
+          Rscript -e '.libPaths("~/R/library"); print(installed.packages(lib.loc = "~/R/library")[, "Package"])'
         env:
           R_LIBS_USER: ~/R/library
+
 
       - name: Run Kobo data pull script
         env:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
           R_LIBS_USER: ~/R/library
         run: |
+          echo "Lib paths being used:"
+          Rscript -e '.libPaths()'
           Rscript Scripts/fetch_kobo_data.R
+
 
       - name: Upload Kobo data as artifact
         uses: actions/upload-artifact@v4
