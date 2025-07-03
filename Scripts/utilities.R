@@ -101,3 +101,50 @@ cores_programa <- c(
   "Saúde Mental"       = "#264653"   # custom: deep slate
 )
 
+add_missing_ttd_vars <- function(df) {
+  
+  # List of required budget variables with "ttd_" prefix
+  required_cols <- c(
+    "ttd_ajudas_domesticas_oe",
+    "ttd_ajudas_domesticas_prosaude",
+    "ttd_ajudas_domesticas_outro",
+    "ttd_ajudas_internacionais_oe",
+    "ttd_ajudas_internacionais_prosaude",
+    "ttd_ajudas_internacionais_outro",
+    "ttd_outras_despesas_pessoal_oe",
+    "ttd_outras_despesas_pessoal_prosaude",
+    "ttd_outras_despesas_pessoal_outro",
+    "ttd_bens_combustivel_oe",
+    "ttd_bens_combustivel_prosaude",
+    "ttd_bens_combustivel_outro",
+    "ttd_bens_gerais_oe",
+    "ttd_bens_gerais_prosaude",
+    "ttd_bens_gerais_outro",
+    "ttd_servicos_coms_oe",
+    "ttd_servicos_coms_prosaude",
+    "ttd_servicos_coms_outro",
+    "ttd_servicos_passagens_domesticas_oe",
+    "ttd_servicos_passagens_domesticas_prosaude",
+    "ttd_servicos_passagens_domesticas_outro",
+    "ttd_servicos_passagens_internacionais_oe",
+    "ttd_servicos_passagens_internacionais_prosaude",
+    "ttd_servicos_passagens_internacionais_outro",
+    "ttd_servicos_gerais_oe",
+    "ttd_servicos_gerais_prosaude",
+    "ttd_servicos_gerais_outro"
+  )
+  
+  # Identify which variables are missing from the dataframe
+  missing_cols <- setdiff(required_cols, names(df))
+  
+  # Add missing columns with NA_real_
+  df <- df %>%
+    bind_cols(
+      tibble::tibble(!!!setNames(
+        lapply(missing_cols, function(col) NA_real_),
+        missing_cols
+      ))
+    )
+  
+  return(df)
+}

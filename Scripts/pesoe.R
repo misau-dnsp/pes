@@ -1,5 +1,5 @@
 
-# LOAD DEPENDENCIES ---------------------------------------------------------
+# DEPENDENCIES ---------------------------------------------------------
 
 library(tidyverse)
 library(ggthemes)
@@ -13,7 +13,7 @@ library(openxlsx)
 library(scales)
 
 
-# DEFINE GLOBAL VARIABLES ---------------------------------------------------------
+# GLOBAL VARIABLES ---------------------------------------------------------
 
 # Kobo connection
 acct_kobo <- "kobo-jlara"
@@ -143,7 +143,7 @@ rm(assets, asset_list, uid)
 dm_draw(asset_df)
 
 
-# MUNGE CODES ----------------------------------------------------
+# CURATE ACTIVITY & SUBACTIVITY CODES ----------------------------------------------------
 
 # Create dataframe for activity and subactivity codes
 df_codigos <- asset_df$main %>% 
@@ -177,7 +177,7 @@ df_codigos <- asset_df$main %>%
 rm(mapa_objectivos_esp)
 
 
-# MUNGE GEOTARGET -----------------------------------------------------
+# CURATE GEOTARGETS -----------------------------------------------------
 
 df_metas <- asset_df$tbl_geografia_impl %>% 
   # Pivot geographic target table wide
@@ -217,7 +217,7 @@ df_metas <- asset_df$tbl_geografia_impl %>%
          localizacao)
 
 
-# MUNGE CALENDAR & DURATION ------------------------------------------
+# CURATE IMPL. CALENDAR/DURATION ------------------------------------------
 
 # Create tibble of the entire year in case subactivities don't cover entire period
 full_year <- tibble(
@@ -280,9 +280,65 @@ df_calendar_duracao <- asset_df$tbl_datas_impl %>%
 rm(full_year, month_week_levels, df_calendar_long, full_grid, parent_ids)
 
 
-# CREATE PESOE DF--------------------------------------------------------------
+# CURATE FINANCIADOR ---------------------------------------------
 
-output_pesoe <- asset_df$main %>%
+df_financiador_outro <- asset_df$tbl_financiamento_outro %>% 
+  mutate(
+    financiador = pmap_chr(
+      list(financiamento_outro_especificacao, financiamento_outro_especificacao_),
+      function(codes_str, outros_val) {
+        codes <- str_split(codes_str, "\\s+")[[1]]
+        
+        # Map known codes
+        mapped <- mapa_financiador[codes[codes %in% names(mapa_financiador)]]
+        
+        # Add 'outros' text if present
+        if ("fonte_outros" %in% codes) {
+          mapped <- c(mapped, outros_val)
+        }
+        
+        # Collapse to comma-separated string
+        paste(mapped, collapse = ", ")
+      }
+    )
+  ) %>%
+  group_by(`_parent_index`) %>%
+  summarise(
+    financiador = paste(unique(financiador), collapse = ", "),
+    .groups = "drop"
+  )
+
+df_financiador <- asset_df$main %>%
+  # Subset variables and convert values to labels
+  mutate(
+    across(any_of(vars_to_label), as_factor),
+    n = row_number(),
+    financiamento_oe = if_else(financiamento_oe == "0", NA_character_, "OE"),
+    financiamento_prosaude = if_else(financiamento_prosaude == "0", NA_character_, "ProSaude")
+  ) %>% 
+  left_join(df_financiador_outro, by = join_by(`_index` == `_parent_index`)) %>% 
+  mutate(
+    financiador = pmap_chr(
+      list(financiador, financiamento_oe, financiamento_prosaude),
+      function(f, oe, prosaude) {
+        parts <- c(f, oe, prosaude)
+        parts <- parts[!is.na(parts) & parts != ""]
+        if (length(parts) == 0) NA_character_ else paste(parts, collapse = ", ")
+      }
+    ),
+    n_financiador = str_count(financiador, ",") + 1
+  ) %>% 
+  select(
+    `_index`,
+    financiador,
+    n_financiador
+  )
+
+rm(df_financiador_outro)
+
+# FINALIZE PESOE --------------------------------------------------------------
+
+df_pes <- asset_df$main %>%
   # Subset variables and convert values to labels
   select(any_of(vars_pesoe)) %>%
   mutate(
@@ -325,7 +381,9 @@ output_pesoe <- asset_df$main %>%
       subactividade_local == "Nivel Central" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
       TRUE ~ localizacao
     )
-  ) %>% 
+  )
+
+output_pesoe <- df_pes %>% 
   left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
   select(-c(`_index`, subactividade_local)) %>% 
   # Format numbers
@@ -339,34 +397,8 @@ output_pesoe <- asset_df$main %>%
   )
 
 
-# CREATE PDF DF -------------------------------------------------------------
 
-df_financiador <- asset_df$tbl_financiamento_outro %>% 
-  mutate(
-    financiador = pmap_chr(
-      list(financiamento_outro_especificacao, financiamento_outro_especificacao_),
-      function(codes_str, outros_val) {
-        codes <- str_split(codes_str, "\\s+")[[1]]
-        
-        # Map known codes
-        mapped <- mapa_financiador[codes[codes %in% names(mapa_financiador)]]
-        
-        # Add 'outros' text if present
-        if ("fonte_outros" %in% codes) {
-          mapped <- c(mapped, outros_val)
-        }
-        
-        # Collapse to comma-separated string
-        paste(mapped, collapse = ", ")
-      }
-    )
-  ) %>%
-  group_by(`_parent_index`) %>%
-  summarise(
-    financiador = paste(unique(financiador), collapse = ", "),
-    .groups = "drop"
-  )
-
+# FINALIZE PDF -------------------------------------------------------------
 
 output_pdf <- asset_df$main %>%
   filter(subactividade_tipo == "formacao_capacitacao") %>% 
@@ -375,24 +407,12 @@ output_pdf <- asset_df$main %>%
   arrange(responsavel_programa) %>% 
   mutate(
     across(any_of(vars_to_label), as_factor),
-    n = row_number(),
-    financiamento_oe = if_else(financiamento_oe == "0", NA_character_, "OE"),
-    financiamento_prosaude = if_else(financiamento_prosaude == "0", NA_character_, "ProSaude")
+    n = row_number()
   ) %>% 
   left_join(df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
   left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>% 
   left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
-  left_join(df_financiador, by = join_by(`_index` == `_parent_index`)) %>% 
-  mutate(
-    financiador = pmap_chr(
-      list(financiador, financiamento_oe, financiamento_prosaude),
-      function(f, oe, prosaude) {
-        parts <- c(f, oe, prosaude)
-        parts <- parts[!is.na(parts) & parts != ""]
-        if (length(parts) == 0) NA_character_ else paste(parts, collapse = ", ")
-      }
-    )
-  ) %>% 
+  left_join(df_financiador, by = join_by(`_index` == `_index`)) %>% 
   select(
     n,
     subactividade_descricao,
@@ -406,45 +426,323 @@ output_pdf <- asset_df$main %>%
     matches("_[0-9]{2}$"),
     calc_custo_total,
     financiador
-  ) %>% 
+  )
+
+
+# FINALIZE TTD -----------------------------------------------------------
+
+df_ttd <- asset_df$main %>% 
+  select(c(`_index`,
+           subactividade_local,
+           calc_custo_viagem_ajudas,
+           calc_sum_viagem_passagens,
+           calc_custo_viagem_terrestre,
+           calc_custo_contratacao_recarga,
+           calc_custo_contratacao_evento,
+           calc_custo_outro)) %>% 
+  left_join(df_financiador, by = join_by(`_index` == `_index`)) %>% 
   glimpse()
 
 
-# CREATE OUTPUT -----------------------------------------------------------
+# functionalize this here...
+if ("calc_custo_viagem_ajudas" %in% names(df_ttd)) {
+  df_ttd <- df_ttd %>%
+    mutate(
+      # ajudas domesticas
+      ttd_ajudas_domesticas_oe = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ calc_custo_viagem_ajudas,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_ajudas_domesticas_prosaude = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ calc_custo_viagem_ajudas,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_ajudas_domesticas_outro = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ calc_custo_viagem_ajudas,
+        TRUE ~ NA_real_
+      ),
+      
+      # ajudas internacionais
+      ttd_ajudas_internacionais_oe = case_when(
+        subactividade_local == 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ calc_custo_viagem_ajudas,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_ajudas_internacionais_prosaude = case_when(
+        subactividade_local == 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ calc_custo_viagem_ajudas,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_ajudas_internacionais_outro = case_when(
+        subactividade_local == 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ calc_custo_viagem_ajudas,
+        TRUE ~ NA_real_
+      ),
+      
+      # outras despesas (MISSING!)
+      ttd_outras_despesas_pessoal_oe = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_outras_despesas_pessoal_prosaude = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_outras_despesas_pessoal_outro = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      # combustivel
+      ttd_bens_combustivel_oe = case_when(
+        n_financiador == 1 &
+          financiador == 'OE' ~ calc_custo_viagem_terrestre,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_bens_combustivel_prosaude = case_when(
+        n_financiador == 1 &
+          financiador == 'ProSaude' ~ calc_custo_viagem_terrestre,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_bens_combustivel_outro = case_when(
+        n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ calc_custo_viagem_terrestre,
+        TRUE ~ NA_real_
+      ),
+      
+      # bens gerais (MISSING!)
+      ttd_bens_gerais_oe = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_bens_gerais_prosaude = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_bens_gerais_outro = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      # comunicacao
+      ttd_servicos_coms_oe = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ calc_custo_contratacao_recarga,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_coms_prosaude = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ calc_custo_contratacao_recarga,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_coms_outro = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ calc_custo_contratacao_recarga,
+        TRUE ~ NA_real_
+      ),
+      
+      # passagens domesticas
+      ttd_servicos_passagens_domesticas_oe = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ calc_sum_viagem_passagens,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_passagens_domesticas_prosaude = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ calc_sum_viagem_passagens,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_passagens_domesticas_outro = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ calc_sum_viagem_passagens,
+        TRUE ~ NA_real_
+      ),
+      
+      # passagens internacionais
+      ttd_servicos_passagens_internacionais_oe = case_when(
+        subactividade_local == 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ calc_sum_viagem_passagens,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_passagens_internacionais_prosaude = case_when(
+        subactividade_local == 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ calc_sum_viagem_passagens,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_passagens_internacionais_outro = case_when(
+        subactividade_local == 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ calc_sum_viagem_passagens,
+        TRUE ~ NA_real_
+      ),
+      
+      # servicos gerais (MISSING!)
+      ttd_servicos_gerais_oe = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'OE' ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_gerais_prosaude = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          financiador == 'ProSaude' ~ NA_real_,
+        TRUE ~ NA_real_
+      ),
+      
+      ttd_servicos_gerais_outro = case_when(
+        subactividade_local != 'nivel_internacional' &
+          n_financiador == 1 &
+          !(financiador %in% c('OE', 'ProSaude')) ~ NA_real_,
+        TRUE ~ NA_real_
+      )
+    )
+}
 
-# Create base workbook
+df_ttd <- df_ttd %>% 
+  select(
+    `_index`,
+    starts_with("ttd_"),
+    n_financiador,
+    financiador
+  )
+  
+output_ttd <- df_pes %>% 
+  select(`_index`,
+         n,
+         codigo_actividade,
+         actividade_principal_descricao,
+         actividade_principal_indicador,
+         actividade_principal_meta,
+         responsavel_programa,
+         codigo_subactividade,
+         subactividade_descricao,
+         subactividade_meta,
+         subactividade_indicador,
+         subactividade_local,
+         subactividade_beneficiario,
+         financiamento_total,
+         financiamento_oe,
+         financiamento_prosaude,
+         financiamento_outro_total,
+         financiamento_lacuna
+         ) %>% 
+  left_join(df_ttd, by = join_by(`_index` == `_index`)) %>%
+  relocate(contains('financiador'), .after = n)
+
+# CREATE EXCEL PRODUCT -----------------------------------------------------------
+
+# Create workbook and tabs
 wb <- createWorkbook()
-
-# Create "Info" tab showing timestamp
 addWorksheet(wb, "Info")
 addWorksheet(wb, "PESOE")
 addWorksheet(wb, "PDF")
+addWorksheet(wb, "TTD")
 
-# Create styles
-style_wrap <- createStyle(
-  wrapText = TRUE
+# Write data
+writeData(
+  wb,
+  sheet = "Info",
+  x = as.character(glue("Dados Retirados em: {dt_formatted_wb}")),
+  startCol = 1,
+  startRow = 1
 )
 
-style_centered <- createStyle(
-  halign = "center",
-  valign = "center"
-)
+writeData(
+  wb, 
+  sheet = "Info", 
+  x = "Acções necessárias após a criação do Excel", 
+  startCol = 1, 
+  startRow = 3
+  )
 
-style_x <- createStyle(
-  fgFill = "#92D050",
-  halign = "center",
-  valign = "center",
-  textDecoration = NULL   # No bold
-)
+writeData(
+  wb, 
+  sheet = "Info", 
+  x = "Para as subactividades com mais de um financiador, distribuir as despesas por fonte na folha TTD (usar coluna “n_financiador” para detectar estes casos)", 
+  startCol = 1, 
+  startRow = 4
+  )
 
-# Write "Info" content
-writeData(wb, sheet = "Info", x = "Dados retirados da KoboToolbox em:", startCol = 1, startRow = 1)
-writeData(wb, sheet = "Info", x = dt_formatted_wb, startCol = 2, startRow = 1)
+writeData(
+  wb, 
+  sheet = "Info", 
+  x = "Após a elaboração da proposta final de Excel, distribuir para revisão e correcções", 
+  startCol = 1, 
+  startRow = 5
+  )
 
-# Write "PESOE" content
-writeData(wb, sheet = "PESOE", x = output_pesoe, startCol = 1, startRow = 1)
+writeData(
+  wb, 
+  sheet = "PDF", 
+  x = output_pdf, 
+  startCol = 1, 
+  startRow = 1
+  )
 
-# Style content
+writeData(
+  wb, 
+  sheet = "TTD", 
+  x = output_ttd, 
+  startCol = 1, 
+  startRow = 1
+  )
+
+writeData(
+  wb, 
+  sheet = "PESOE", 
+  x = output_pesoe, 
+  startCol = 1, 
+  startRow = 1
+  )
+
+# customize column widths
 setColWidths(
   wb, sheet = "Info",
   cols = 1:2,
@@ -463,65 +761,118 @@ setColWidths(
   widths = "auto"
 )
 
+# Create styles
+style_background_white <- createStyle(fgFill = "#FFFFFF")
+
+style_text_bold_red <- createStyle(
+  textDecoration = "bold",
+  fontColour = "#FF0000"
+)
+
+style_text_bold <- createStyle(
+  textDecoration = "bold"
+)
+
+style_text_wrap <- createStyle(
+  wrapText = TRUE
+)
+
+style_text_centered <- createStyle(
+  halign = "center",
+  valign = "center"
+)
+
+style_calendar <- createStyle(
+  fgFill = "#92D050",
+  halign = "center",
+  valign = "center",
+  textDecoration = NULL
+)
+
+# apply styles
 addStyle(
-  wb, sheet = "PESOE", style = style_centered,
+  wb,
+  sheet = "Info",
+  style = style_background_white,
+  rows = 1:1000,
+  cols = 1:50,
+  gridExpand = TRUE,
+  stack = TRUE
+)
+
+addStyle(
+  wb,
+  sheet = "Info",
+  style = style_text_bold_red,
+  cols = 1,
+  rows = 1,
+  gridExpand = TRUE
+)
+
+addStyle(
+  wb,
+  sheet = "Info",
+  style = style_text_bold,
+  cols = 1,
+  rows = 3,
+  gridExpand = TRUE
+)
+
+addStyle(
+  wb, 
+  sheet = "PESOE", 
+  style = style_text_centered,
   rows = 1:(nrow(output_pesoe) + 1),  # +1 to include header
   cols = 1,                           # Column 2 = "n"
   gridExpand = TRUE
 )
 
 addStyle(
-  wb, sheet = "PDF", style = style_centered,
+  wb, 
+  sheet = "PDF", 
+  style = style_text_centered,
   rows = 1:(nrow(output_pdf) + 1),  # +1 to include header
   cols = 1,                           # Column 2 = "n"
   gridExpand = TRUE
 )
 
 addStyle(
-  wb, sheet = "PESOE", style = style_wrap,
+  wb, 
+  sheet = "PESOE", 
+  style = style_text_wrap,
   rows = 1:(nrow(output_pesoe) + 1),  # Includes header row
   cols = c(2, 4),
   gridExpand = TRUE
 )
 
-# Set cells to receive style_x
-data_range_pesoe <- output_pesoe[, -1] # Exclude first column (_parent_index or label column)
-
-for (col_index in seq_along(data_range_pesoe)) {
-  col_letter <- int2col(col_index + 1) # +1 because first column is not styled
-  rows <- which(data_range_pesoe[[col_index]] == "x") + 1 # +1 because of header row
-  if (length(rows) > 0) {
-    addStyle(
-      wb, sheet = "PESOE", style = style_x,
-      rows = rows, cols = col_index + 1,
-      gridExpand = FALSE, stack = TRUE
-    )
+apply_calendar_style <- function(wb, sheet, data) {
+  data_no_label <- data[, -1]
+  for (col_index in seq_along(data_no_label)) {
+    rows <- which(data_no_label[[col_index]] == "x") + 1
+    if (length(rows) > 0) {
+      addStyle(
+        wb, sheet = sheet, style = style_calendar,
+        rows = rows, cols = col_index + 1,
+        gridExpand = FALSE, stack = TRUE
+      )
+    }
   }
 }
 
-# Set cells to receive style_x
-data_range_pdf <- output_pdf[, -1] # Exclude first column (_parent_index or label column)
+apply_calendar_style(
+  wb, 
+  "PESOE", 
+  output_pesoe
+)
 
-for (col_index in seq_along(data_range_pdf)) {
-  col_letter <- int2col(col_index + 1) # +1 because first column is not styled
-  rows <- which(data_range_pdf[[col_index]] == "x") + 1 # +1 because of header row
-  if (length(rows) > 0) {
-    addStyle(
-      wb, sheet = "PDF", style = style_x,
-      rows = rows, cols = col_index + 1,
-      gridExpand = FALSE, stack = TRUE
-    )
-  }
-}
-
-# Write "PESOE" content
-writeData(wb, sheet = "PDF", x = output_pdf, startCol = 1, startRow = 1)
+apply_calendar_style(
+  wb, 
+  "PDF", 
+  output_pdf
+)
 
 
-# WRITE OUTPUT ----------------------------------------------------------
+# WRITE PRODUCT ----------------------------------------------------------
 
-# Save Excel workbook to disc
 saveWorkbook(wb, file = filename_output, overwrite = TRUE)
-
-
 
