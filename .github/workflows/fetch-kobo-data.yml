@@ -24,7 +24,7 @@ jobs:
         env:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
         run: |
-          Rscript scripts/fetch_kobo_data.R
+          Rscript Scripts/fetch_kobo_data.R
 
       - name: Upload Kobo data as artifact
         uses: actions/upload-artifact@v4  # ⬅️ ✅ Updated from v3
