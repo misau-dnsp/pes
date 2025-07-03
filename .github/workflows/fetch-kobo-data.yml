@@ -35,4 +35,3 @@ jobs:
         with:
           name: kobo-data
           path: output/kobo_data.csv
-%>% 
