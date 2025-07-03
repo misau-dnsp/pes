@@ -16,24 +16,32 @@ jobs:
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+      
+
       - name: Install R packages
         run: |
-          mkdir -p ~/R/library
-          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"), lib = "~/R/library", repos = "https://cloud.r-project.org")'
+          mkdir -p /home/runner/work/_temp/Rlibs
+          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"), lib = "/home/runner/work/_temp/Rlibs", repos = "https://cloud.r-project.org")'
           echo "Installed packages:"
-          Rscript -e '.libPaths("~/R/library"); print(installed.packages(lib.loc = "~/R/library")[, "Package"])'
+          Rscript -e '.libPaths("/home/runner/work/_temp/Rlibs"); print(installed.packages(lib.loc = "/home/runner/work/_temp/Rlibs")[, "Package"])'
         env:
-          R_LIBS_USER: ~/R/library
+          R_LIBS_USER: /home/runner/work/_temp/Rlibs
+
 
 
       - name: Run Kobo data pull script
         env:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
-          R_LIBS_USER: ~/R/library
+          R_LIBS_USER: /home/runner/work/_temp/Rlibs
         run: |
           echo "Lib paths being used:"
           Rscript -e '.libPaths()'
           Rscript Scripts/fetch_kobo_data.R
+
 
 
       - name: Upload Kobo data as artifact
