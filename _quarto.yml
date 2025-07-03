@@ -34,7 +34,7 @@
           }
   
           .custom-navbar-title small {
-              font-size: 1.3rem;        /* ⬅️ make subtitle larger too */
+              font-size: 1.2rem;        /* ⬅️ make subtitle larger too */
               font-weight: 350;
               color: #555555;
               line-height: 1;
