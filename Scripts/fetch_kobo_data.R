@@ -3,18 +3,17 @@ library(httr)
 library(jsonlite)
 library(glue)
 
-# Get token from environment
 token <- Sys.getenv("KOBO_TOKEN")
+form_id <- "aCrqNHbnLFYEEYBpjUkrac"
+url <- glue::glue("https://eu.kobotoolbox.org/api/v2/assets/{form_id}/data.json")
 
-# Define form ID (replace with yours)
-form_id <- "a1BcD2eF3GhijKLm"
-base_url <- glue("https://eu.kobotoolbox.org/api/v2/assets/{form_id}/data.json")
+print(url)  # Optional, helps with debugging
 
-# Fetch data
-res <- GET(base_url, add_headers(Authorization = paste("Token", token)))
-stop_for_status(res)
-data <- fromJSON(content(res, "text"))$results
+res <- httr::GET(url, httr::add_headers(Authorization = paste("Token", token)))
+httr::stop_for_status(res)
 
-# Save to file
+data <- jsonlite::fromJSON(httr::content(res, "text"))$results
 dir.create("output", showWarnings = FALSE)
-write.csv(data, file = "output/kobo_data.csv", row.names = FALSE)
+write.csv(data, "output/kobo_data.csv", row.names = FALSE)
+
+print("✅ Data saved successfully.")
