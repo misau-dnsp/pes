@@ -18,14 +18,15 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"))'
+          mkdir -p ~/R/library
+          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"), lib = "~/R/library")'
         env:
-          R_LIBS_USER: /home/runner/work/_temp/Rlibs
+          R_LIBS_USER: ~/R/library
 
       - name: Run Kobo data pull script
         env:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
-          R_LIBS_USER: /home/runner/work/_temp/Rlibs
+          R_LIBS_USER: ~/R/library
         run: |
           Rscript Scripts/fetch_kobo_data.R
 
@@ -34,3 +35,4 @@ jobs:
         with:
           name: kobo-data
           path: output/kobo_data.csv
+%>% 
