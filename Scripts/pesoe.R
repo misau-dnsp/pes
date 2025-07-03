@@ -12,7 +12,6 @@ library(glue)
 library(openxlsx)
 library(scales)
 
-
 # GLOBAL VARIABLES ---------------------------------------------------------
 
 # Kobo connection

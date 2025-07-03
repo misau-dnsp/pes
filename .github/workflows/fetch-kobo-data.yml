@@ -1,0 +1,33 @@
+name: Fetch Kobo Data
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Every day at 6AM UTC
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  pull_kobo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install R packages
+        run: |
+          Rscript -e 'install.packages(c("httr", "jsonlite", "glue"))'
+
+      - name: Run Kobo script
+        env:
+          KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
+        run: |
+          Rscript scripts/fetch_kobo_data.R
+
+      - name: Upload Kobo data as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: kobo-data
+          path: output/kobo_data.csv
