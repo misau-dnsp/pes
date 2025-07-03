@@ -15,6 +15,13 @@ httr::stop_for_status(res)
 data <- jsonlite::fromJSON(httr::content(res, "text"))$results
 data <- jsonlite::flatten(data)
 
+# Drop list-columns
+list_cols <- names(data)[sapply(data, is.list)]
+if (length(list_cols) > 0) {
+  message("⚠️ Dropped list-columns: ", paste(list_cols, collapse = ", "))
+}
+data <- data[ , !sapply(data, is.list)]
+
 dir.create("output", showWarnings = FALSE)
 write.csv(data, "output/kobo_data.csv", row.names = FALSE)
 
