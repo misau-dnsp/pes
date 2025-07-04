@@ -25,62 +25,6 @@ columns_to_remove <- c("calc_custo_instrumentos",
 
 
 
-library(dplyr)
-
-gen_tbl_activities <- function(df, breakdown = "subactividade_tipo") {
-  # Use tidy evaluation for grouping
-  group_var <- sym(breakdown)
-  
-  df_summary <- df %>%
-    group_by(!!group_var) %>%
-    summarise(
-      n = n(),
-      across(
-        c(calc_custo_total, financiamento_oe, financiamento_prosaude,
-          financiamento_outro_total, calc_financiamento_lacuna),
-        ~ sum(as.numeric(.x), na.rm = TRUE),
-        .names = "{.col}"
-      ),
-      .groups = "drop"
-    ) %>% 
-    arrange(desc(calc_custo_total))
-  
-  df_total <- df %>%
-    summarise(
-      !!group_var := "Total",
-      n = n(),
-      calc_custo_total = sum(as.numeric(calc_custo_total), na.rm = TRUE),
-      financiamento_oe = sum(as.numeric(financiamento_oe), na.rm = TRUE),
-      financiamento_prosaude = sum(as.numeric(financiamento_prosaude), na.rm = TRUE),
-      financiamento_outro_total = sum(as.numeric(financiamento_outro_total), na.rm = TRUE),
-      calc_financiamento_lacuna = sum(as.numeric(calc_financiamento_lacuna), na.rm = TRUE)
-    )
-  
-  bind_rows(df_summary, df_total)
-}
-
-
-
-gen_tbl_financiador <- function(df, breakdown = financiador_detalhe) {
-  
-  df %>%
-    group_by({{ breakdown }}) %>%
-    summarise(
-      n = n(),
-      financiamento = sum(valor, na.rm = TRUE),
-      .groups = "drop"
-    ) %>%
-    arrange(desc(financiamento)) %>% 
-    bind_rows(
-      df %>%
-        summarise(
-          {{ breakdown }} := "Total",
-          n = n(),
-          financiamento = sum(valor, na.rm = TRUE)
-        )
-    )
-}
-
 cores_programa <- c(
   "Nutrição"           = "#007A33",  # health-green
   "PAV"                = "#2780e3",  # primary-blue
@@ -147,15 +91,4 @@ add_missing_ttd_vars <- function(df) {
     )
   
   return(df)
-}
-
-get_kobo_data <- function(form_id) {
-  url <- glue::glue("https://eu.kobotoolbox.org/api/v2/assets/{form_id}/data.json")
-  res <- httr::GET(url, httr::add_headers(Authorization = paste("Token", token)))
-  httr::stop_for_status(res)
-  data <- jsonlite::fromJSON(httr::content(res, "text"))$results
-  data <- jsonlite::flatten(data)
-  # Drop list-columns (Kobo repeat groups, media, etc.)
-  data <- data[ , !sapply(data, is.list)]
-  return(data)
 }

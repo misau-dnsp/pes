@@ -8,9 +8,11 @@ format:
 execute:
   echo: false
   warning: false
+  message: false
 ---
 
-```{r, load-dependencies, results='hide'}
+```{r, load-dependencies}
+
 library(tidyverse)
 library(ggthemes)
 library(robotoolbox)
@@ -19,18 +21,77 @@ library(dm)
 library(haven)
 library(gt)
 library(glue)
-source("Scripts/utilities.R")
 
-# acct_kobo <- "kobo-jlara"
-# acct_kobo_con <- get_account(name = acct_kobo)
-# 
-# kobo_token(username = acct_kobo_con$username,
-#            password = acct_kobo_con$password,
-#            url = acct_kobo_con$url)
 
 ```
 
+```{r, load-global-variables}
+
+# variable vector for kobo label substitution
+columns_to_label <- c("responsavel_programa", 
+                      "responsavel_pf_ma", 
+                      "subactividade_tipo", 
+                      "objectivo_especifico", 
+                      "objectivo_pess", 
+                      "subactividade_local")
+
+gen_tbl_activities <- function(df, breakdown = "subactividade_tipo") {
+  # Use tidy evaluation for grouping
+  group_var <- sym(breakdown)
+  
+  df_summary <- df %>%
+    group_by(!!group_var) %>%
+    summarise(
+      n = n(),
+      across(
+        c(calc_custo_total, financiamento_oe, financiamento_prosaude,
+          financiamento_outro_total, calc_financiamento_lacuna),
+        ~ sum(as.numeric(.x), na.rm = TRUE),
+        .names = "{.col}"
+      ),
+      .groups = "drop"
+    ) %>% 
+    arrange(desc(calc_custo_total))
+  
+  df_total <- df %>%
+    summarise(
+      !!group_var := "Total",
+      n = n(),
+      calc_custo_total = sum(as.numeric(calc_custo_total), na.rm = TRUE),
+      financiamento_oe = sum(as.numeric(financiamento_oe), na.rm = TRUE),
+      financiamento_prosaude = sum(as.numeric(financiamento_prosaude), na.rm = TRUE),
+      financiamento_outro_total = sum(as.numeric(financiamento_outro_total), na.rm = TRUE),
+      calc_financiamento_lacuna = sum(as.numeric(calc_financiamento_lacuna), na.rm = TRUE)
+    )
+  
+  bind_rows(df_summary, df_total)
+}
+
+gen_tbl_financiador <- function(df, breakdown = financiador_detalhe) {
+  
+  df %>%
+    group_by({{ breakdown }}) %>%
+    summarise(
+      n = n(),
+      financiamento = sum(valor, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    arrange(desc(financiamento)) %>% 
+    bind_rows(
+      df %>%
+        summarise(
+          {{ breakdown }} := "Total",
+          n = n(),
+          financiamento = sum(valor, na.rm = TRUE)
+        )
+    )
+}
+
+```
+
+
 ```{r load-kobo-creds}
+
 Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
 Sys.setenv(KOBOTOOLBOX_TOKEN = Sys.getenv("KOBO_TOKEN"))
 
@@ -38,6 +99,7 @@ kobo_setup(
   url = Sys.getenv("KOBOTOOLBOX_URL"),
   token = Sys.getenv("KOBOTOOLBOX_TOKEN")
 )
+
 
 ```
 
@@ -47,6 +109,7 @@ kobo_setup(
 # timestamp of data pull
 dt <- today()
 
+# acquire kobo assets
 assets <- kobo_asset_list()
 
 uid <- assets %>%
@@ -57,15 +120,13 @@ asset <- kobo_asset(uid)
 
 asset_df <- kobo_submissions(asset)
 
+# remove unneeded items
 rm(assets, asset, uid)
 
 ```
 
 
 ```{r  munge-data}
-#| echo: false
-#| message: false
-#| warning: false
 
 # df main for... only activity count at present
 df_main <- asset_df$main %>%
@@ -155,9 +216,6 @@ df_main_financ <- asset_df %>%
 ```
 
 ```{r calculate-values}
-#| echo: false
-#| message: false
-#| warning: false
 
 # count of subactivities
 val_n_activities <- nrow(df_main)
@@ -171,6 +229,7 @@ tbl_financiamento_financiador <- gen_tbl_financiador(df_main_financ)
 # sum of costs
 val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>% 
   format(big.mark = ".", decimal.mark = ",", nsmall = 0)
+
 
 ```
 
@@ -266,6 +325,7 @@ tbl_activities_programa %>%
     dec_mark = ","
   )
 
+
 ```
 
 A tabela abaixo apresenta um resumo das subactividades propostas organizadas por tipo de intervenção. Para cada tipo de subactividade, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O tipo de subactividade com o maior orçamento total proposto é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"])]`, com um custo estimado de `r scales::comma(max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O tipo com o maior número de actividades propostas é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"])]`, com `r max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE)` subactividades.
@@ -356,6 +416,7 @@ tbl_activities_type %>%
     dec_mark = ","
   )
 
+
 ```
 
 
@@ -370,13 +431,12 @@ columns_gt_numeric <- tbl_financiamento_financiador %>%
 
 tbl_financiamento_financiador %>% 
   gt() %>% 
-    # General table options
+  # General table options
   tab_options(
     table.font.names = c("Nunito Sans", "sans-serif"),
     table.align = "left",
     table.width = pct(40)
   ) %>%
-  
   
   # Header styles
   tab_style(
@@ -427,6 +487,7 @@ tbl_financiamento_financiador %>%
     dec_mark = ","
   )
 
+
 ```
 
 ### Calendário de Execução
@@ -436,8 +497,6 @@ A Unidade de Monitoria e Avaliação (UMA) da DNSP criou o diagrama de Gantt aba
 ```{r plot-activity-gantt, fig.width=12, fig.height=4, fig.align='center', fig.bg="transparent"}
 
 # plot activity gantt chart
-
-
 plot_gantt <- ggplot(df_main_dates) +
   geom_segment(
     aes(
