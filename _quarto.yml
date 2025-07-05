@@ -1,5 +1,7 @@
   project:
     type: website
+    resources:
+    - Images/
   
   website:
     title: ""  # Leave title blank or very short to suppress default
