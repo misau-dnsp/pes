@@ -14,15 +14,16 @@ execute:
 ```{r, load-dependencies}
 
 library(dplyr)
+library(tidyr)
 library(readr)
 library(ggplot2)
 library(stringr)
 library(tibble)
 library(purrr)
 library(forcats)
+library(lubridate)
 library(ggthemes)
 library(robotoolbox)
-library(glamr)
 library(dm)
 library(haven)
 library(gt)
