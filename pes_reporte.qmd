@@ -13,7 +13,13 @@ execute:
 
 ```{r, load-dependencies}
 
-library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(stringr)
+library(tibble)
+library(purrr)
+library(forcats)
 library(ggthemes)
 library(robotoolbox)
 library(glamr)

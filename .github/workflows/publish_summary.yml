@@ -31,7 +31,7 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("tidyverse", "ggthemes", "robotoolbox", "glamr", "dm", "haven", "gt", "glue"), repos = "https://cloud.r-project.org")'
+          Rscript -e 'install.packages(c("dplyr", "readr", "ggplot2", "stringr", "tibble", "purrr", "forcats", "ggthemes", "robotoolbox", "glamr", "dm", "haven", "gt", "glue"), repos = "https://cloud.r-project.org")'
 
       - name: Set Kobo environment variables
         run: |
