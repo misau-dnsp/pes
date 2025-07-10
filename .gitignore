@@ -12,8 +12,6 @@
 *.gz
 *.txt
 *.rds
-*.xlsx
-*.xls
 *.zip
 *.pptx
 *.tfl
@@ -36,5 +34,4 @@ AI/*
 GIS/*
 Graphics/*
 Data/*
-Dataout/*
 /.quarto/
