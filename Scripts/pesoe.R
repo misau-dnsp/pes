@@ -4,23 +4,24 @@
 library(tidyverse)
 library(ggthemes)
 library(robotoolbox)
-library(glamr)
 library(dm)
 library(haven)
 library(gt)
 library(glue)
 library(openxlsx)
 library(scales)
+library(fs)
 
 # GLOBAL VARIABLES ---------------------------------------------------------
 
 # Kobo connection
-acct_kobo <- "kobo-jlara"
-acct_kobo_con <- get_account(name = acct_kobo)
+Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
+Sys.setenv(KOBOTOOLBOX_TOKEN = Sys.getenv("KOBO_TOKEN"))
 
-kobo_token(username = acct_kobo_con$username,
-           password = acct_kobo_con$password,
-           url = acct_kobo_con$url)
+kobo_setup(
+  url = Sys.getenv("KOBOTOOLBOX_URL"),
+  token = Sys.getenv("KOBOTOOLBOX_TOKEN")
+)
 
 # Create timestamps and Excel output file name
 dt <- now()
