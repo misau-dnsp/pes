@@ -25,9 +25,12 @@ kobo_setup(
 
 # Create timestamps and Excel output file name
 dt <- now()
-dt_formatted_wb <- format(dt, "%d/%m/%Y %H:%M")
-dt_formatted_filename <- format(dt, "%Y-%m-%d_%Hh%Mm")
-filename_output <- paste0("Dataout/dnsp_pes_", dt_formatted_filename, ".xlsx")
+dt_formatted_wb <- format(dt, "%d/%m/%Y %H:%M") # not used, consider removing
+dt_formatted_filename <- format(dt, "%Y-%m-%d")
+
+filename_output <- paste0("Dataout/dnsp_pes_", dt_formatted_filename, ".xlsx") # not used, consider removing
+filename_ghpages <- paste0("_site/dnsp_pes_", dt_formatted_filename, ".xlsx")
+filename_download <- paste0("dnsp_pes_", dt_formatted_filename, ".xlsx")
 
 # Variables required for PESOE
 vars_pesoe <- c(
@@ -874,5 +877,4 @@ apply_calendar_style(
 
 # WRITE PRODUCT ----------------------------------------------------------
 
-saveWorkbook(wb, file = filename_output, overwrite = TRUE)
-
+saveWorkbook(wb, file = filename_ghpages, overwrite = TRUE)
