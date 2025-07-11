@@ -25,7 +25,7 @@ jobs:
       - name: Install R packages
         run: |
           Rscript -e 'options(repos = c(CRAN = "https://cloud.r-project.org")); install.packages(c(
-            "ggplot2", "tibble", "tidyr", "readr", "purrr", "dplyr", "stringr", "forcats",  # tidyverse
+            "ggplot2", "tibble", "tidyr", "readr", "purrr", "dplyr", "stringr", "forcats",
             "ggthemes", "robotoolbox", "dm", "haven", "gt", "glue", "openxlsx", "scales", "lubridate"
           ))'
 
@@ -37,13 +37,10 @@ jobs:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
         run: Rscript Scripts/pesoe.R
 
-      - name: Configure Git
+      - name: Commit and push Excel file
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Commit and push new Excel file
-        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add Dataout/*.xlsx
           git commit -m "Add new PESOE Excel file for $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push
