@@ -2,6 +2,7 @@
     type: website
     resources:
     - Images/
+    - Dataout/
   
   website:
     title: ""  # Leave title blank or very short to suppress default

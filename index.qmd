@@ -551,4 +551,20 @@ plot_gantt
 
 Um histórico de versões das tabelas Excel geradas diariamente com a informação da KoboToolbox está disponível abaixo.  Cada download contém folhas separadas para o PESOE, o Plano de Formação e o Quadro de Despesas.
 
+```{r historical-download}
+# List all Excel files in the Dataout folder
+files <- list.files("Dataout", pattern = "^dnsp_pes_\\d{4}-\\d{2}-\\d{2}\\.xlsx$", full.names = TRUE)
+
+file_info <- tibble(
+  file = files,
+  name = basename(files),
+  date = as.Date(str_extract(basename(files), "\\d{4}-\\d{2}-\\d{2}"))
+) %>%
+  arrange(desc(date)) %>%
+  mutate(link = glue("[⬇️ Download](/Dataout/{name})"))
+
+file_info %>%
+  select(`Data do Ficheiro` = date, `Nome do Ficheiro` = name, `Download` = link) %>%
+  gt()
+```
 
