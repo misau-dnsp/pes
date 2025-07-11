@@ -1,7 +1,14 @@
 
 # DEPENDENCIES ---------------------------------------------------------
 
-library(tidyverse)
+library(ggplot2)
+library(tibble)
+library(tidyr)
+library(readr)
+library(purrr)
+library(dplyr)
+library(stringr)
+library(forcats)
 library(ggthemes)
 library(robotoolbox)
 library(dm)
@@ -10,7 +17,6 @@ library(gt)
 library(glue)
 library(openxlsx)
 library(scales)
-library(fs)
 
 # GLOBAL VARIABLES ---------------------------------------------------------
 
