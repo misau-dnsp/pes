@@ -85,6 +85,22 @@ vars_to_label <- c("responsavel_programa",
                    "objectivo_pess", 
                    "subactividade_local")
 
+# Financing source map for renaming
+mapa_financiador <- c(
+  "fonte_banco_mundial" = "Banco Mundial",
+  "fonte_cdc" = "CDC/COAG",
+  "fonte_fdc" = "FDC",
+  "fonte_fnuap" = "FNUAP",
+  "fonte_fundo_global" = "Fundo Global",
+  "fonte_gavi" = "GAVI",
+  "fonte_oim" = "OIM",
+  "fonte_oms" = "OMS",
+  "fonte_pepfar_1" = "PEPFAR",
+  "fonte_prosaude" = "ProSaude",
+  "fonte_rti" = "RTI",
+  "fonte_unicef" = "UNICEF"
+)
+
 # PES activity map for recoding
 mapa_objectivos_esp <- tibble::tibble(
   actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:20)),
@@ -112,21 +128,6 @@ mapa_objectivos_esp <- tibble::tibble(
   )
 )
 
-# Financing source map for renaming
-mapa_financiador <- c(
-  "fonte_banco_mundial" = "Banco Mundial",
-  "fonte_cdc" = "CDC/COAG",
-  "fonte_fdc" = "FDC",
-  "fonte_fnuap" = "FNUAP",
-  "fonte_fundo_global" = "Fundo Global",
-  "fonte_gavi" = "GAVI",
-  "fonte_oim" = "OIM",
-  "fonte_oms" = "OMS",
-  "fonte_pepfar_1" = "PEPFAR",
-  "fonte_prosaude" = "ProSaude",
-  "fonte_rti" = "RTI",
-  "fonte_unicef" = "UNICEF"
-)
 
 # LOAD KOBO ASSETS ----------------------------------------------------------
 
@@ -147,7 +148,7 @@ rm(assets, asset_list, uid)
 
 # DRAW SCHEMA ------------------------------------------------------------
 
-dm_draw(asset_df)
+# dm_draw(asset_df)
 
 
 # CURATE ACTIVITY & SUBACTIVITY CODES ----------------------------------------------------
