@@ -545,3 +545,8 @@ plot_gantt
 
 
 ```
+
+
+### Histórico de Versões do PESOE e Documentos Relacionados
+
+Um histórico de versões das tabelas Excel geradas diariamente com a KoboToolbox está disponível abaixo.  Cada download contém versões do PESOE, do Plano de Formação e do Quadro de Despesas.
