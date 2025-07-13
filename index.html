@@ -68,6 +68,14 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/core-js-2.5.3/shim.min.js"></script>
+<script src="site_libs/react-18.2.0/react.min.js"></script>
+<script src="site_libs/react-18.2.0/react-dom.min.js"></script>
+<script src="site_libs/reactwidget-2.0.0/react-tools.js"></script>
+<link href="site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="site_libs/reactable-0.4.4/reactable.css" rel="stylesheet">
+<script src="site_libs/reactable-binding-0.4.4/reactable.js"></script>
 <style>
   .navbar-brand img {
     max-height: 80px;  /* Increase from default (often ~40–50px) */
@@ -176,23 +184,23 @@ ul.task-list li input[type="checkbox"] {
 <p>Até ao dia em que este relatório foi elaborado (2025-07-13), o pessoal do programa da DNSP tinha proposto um total de 10 actividades para o ano de 2026. O custo total dessas actividades, de acordo com as estimativas de custos fornecidas pelos programas que as propõem, é de 14.393.300 MT. A tabela abaixo resume o número e o custo das subactividades propostas por cada programa do DNSP que introduziu dados na plataforma KoboToolbox utilizada para o planeamento do PES do DNSP. O programa com o maior orçamento proposto é o PNCT, com um total estimado de 7.707.000 MT. O programa com o maior número de actividades propostas é o DNT, com 3 subactividades.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="zelliymqwy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#zelliymqwy table {
+<div id="twtzpwxbac" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#twtzpwxbac table {
   font-family: 'Nunito Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#zelliymqwy thead, #zelliymqwy tbody, #zelliymqwy tfoot, #zelliymqwy tr, #zelliymqwy td, #zelliymqwy th {
+#twtzpwxbac thead, #twtzpwxbac tbody, #twtzpwxbac tfoot, #twtzpwxbac tr, #twtzpwxbac td, #twtzpwxbac th {
   border-style: none;
 }
 
-#zelliymqwy p {
+#twtzpwxbac p {
   margin: 0;
   padding: 0;
 }
 
-#zelliymqwy .gt_table {
+#twtzpwxbac .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -218,12 +226,12 @@ ul.task-list li input[type="checkbox"] {
   border-left-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_caption {
+#twtzpwxbac .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#zelliymqwy .gt_title {
+#twtzpwxbac .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -235,7 +243,7 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-width: 0;
 }
 
-#zelliymqwy .gt_subtitle {
+#twtzpwxbac .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -247,7 +255,7 @@ ul.task-list li input[type="checkbox"] {
   border-top-width: 0;
 }
 
-#zelliymqwy .gt_heading {
+#twtzpwxbac .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -259,13 +267,13 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_bottom_border {
+#twtzpwxbac .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_col_headings {
+#twtzpwxbac .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -280,7 +288,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_col_heading {
+#twtzpwxbac .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -300,7 +308,7 @@ ul.task-list li input[type="checkbox"] {
   overflow-x: hidden;
 }
 
-#zelliymqwy .gt_column_spanner_outer {
+#twtzpwxbac .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -312,15 +320,15 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 4px;
 }
 
-#zelliymqwy .gt_column_spanner_outer:first-child {
+#twtzpwxbac .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#zelliymqwy .gt_column_spanner_outer:last-child {
+#twtzpwxbac .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#zelliymqwy .gt_column_spanner {
+#twtzpwxbac .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -332,11 +340,11 @@ ul.task-list li input[type="checkbox"] {
   width: 100%;
 }
 
-#zelliymqwy .gt_spanner_row {
+#twtzpwxbac .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#zelliymqwy .gt_group_heading {
+#twtzpwxbac .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -362,7 +370,7 @@ ul.task-list li input[type="checkbox"] {
   text-align: left;
 }
 
-#zelliymqwy .gt_empty_group_heading {
+#twtzpwxbac .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -377,15 +385,15 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 
-#zelliymqwy .gt_from_md > :first-child {
+#twtzpwxbac .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#zelliymqwy .gt_from_md > :last-child {
+#twtzpwxbac .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#zelliymqwy .gt_row {
+#twtzpwxbac .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -404,7 +412,7 @@ ul.task-list li input[type="checkbox"] {
   overflow-x: hidden;
 }
 
-#zelliymqwy .gt_stub {
+#twtzpwxbac .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -417,7 +425,7 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-#zelliymqwy .gt_stub_row_group {
+#twtzpwxbac .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -431,15 +439,15 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: top;
 }
 
-#zelliymqwy .gt_row_group_first td {
+#twtzpwxbac .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#zelliymqwy .gt_row_group_first th {
+#twtzpwxbac .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#zelliymqwy .gt_summary_row {
+#twtzpwxbac .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -449,16 +457,16 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-#zelliymqwy .gt_first_summary_row {
+#twtzpwxbac .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_first_summary_row.thick {
+#twtzpwxbac .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#zelliymqwy .gt_last_summary_row {
+#twtzpwxbac .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -468,7 +476,7 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_grand_summary_row {
+#twtzpwxbac .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -478,7 +486,7 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-#zelliymqwy .gt_first_grand_summary_row {
+#twtzpwxbac .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -488,7 +496,7 @@ ul.task-list li input[type="checkbox"] {
   border-top-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_last_grand_summary_row_top {
+#twtzpwxbac .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -498,11 +506,11 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_striped {
+#twtzpwxbac .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#zelliymqwy .gt_table_body {
+#twtzpwxbac .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -511,7 +519,7 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_footnotes {
+#twtzpwxbac .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -525,7 +533,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_footnote {
+#twtzpwxbac .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -534,7 +542,7 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-#zelliymqwy .gt_sourcenotes {
+#twtzpwxbac .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -548,7 +556,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-#zelliymqwy .gt_sourcenote {
+#twtzpwxbac .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -556,72 +564,72 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-#zelliymqwy .gt_left {
+#twtzpwxbac .gt_left {
   text-align: left;
 }
 
-#zelliymqwy .gt_center {
+#twtzpwxbac .gt_center {
   text-align: center;
 }
 
-#zelliymqwy .gt_right {
+#twtzpwxbac .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zelliymqwy .gt_font_normal {
+#twtzpwxbac .gt_font_normal {
   font-weight: normal;
 }
 
-#zelliymqwy .gt_font_bold {
+#twtzpwxbac .gt_font_bold {
   font-weight: bold;
 }
 
-#zelliymqwy .gt_font_italic {
+#twtzpwxbac .gt_font_italic {
   font-style: italic;
 }
 
-#zelliymqwy .gt_super {
+#twtzpwxbac .gt_super {
   font-size: 65%;
 }
 
-#zelliymqwy .gt_footnote_marks {
+#twtzpwxbac .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#zelliymqwy .gt_asterisk {
+#twtzpwxbac .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#zelliymqwy .gt_indent_1 {
+#twtzpwxbac .gt_indent_1 {
   text-indent: 5px;
 }
 
-#zelliymqwy .gt_indent_2 {
+#twtzpwxbac .gt_indent_2 {
   text-indent: 10px;
 }
 
-#zelliymqwy .gt_indent_3 {
+#twtzpwxbac .gt_indent_3 {
   text-indent: 15px;
 }
 
-#zelliymqwy .gt_indent_4 {
+#twtzpwxbac .gt_indent_4 {
   text-indent: 20px;
 }
 
-#zelliymqwy .gt_indent_5 {
+#twtzpwxbac .gt_indent_5 {
   text-indent: 25px;
 }
 
-#zelliymqwy .katex-display {
+#twtzpwxbac .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#zelliymqwy div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#twtzpwxbac div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -734,23 +742,23 @@ Financiamento Previsto
 <p>A tabela abaixo apresenta um resumo das subactividades propostas organizadas por tipo de intervenção. Para cada tipo de subactividade, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O tipo de subactividade com o maior orçamento total proposto é Formacao/Capacitacao, com um custo estimado de 8.673.800 MT. O tipo com o maior número de actividades propostas é Formacao/Capacitacao, com 5 subactividades.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="sqcntogjak" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#sqcntogjak table {
+<div id="naosnejlqv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#naosnejlqv table {
   font-family: 'Nunito Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#sqcntogjak thead, #sqcntogjak tbody, #sqcntogjak tfoot, #sqcntogjak tr, #sqcntogjak td, #sqcntogjak th {
+#naosnejlqv thead, #naosnejlqv tbody, #naosnejlqv tfoot, #naosnejlqv tr, #naosnejlqv td, #naosnejlqv th {
   border-style: none;
 }
 
-#sqcntogjak p {
+#naosnejlqv p {
   margin: 0;
   padding: 0;
 }
 
-#sqcntogjak .gt_table {
+#naosnejlqv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -776,12 +784,12 @@ Financiamento Previsto
   border-left-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_caption {
+#naosnejlqv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#sqcntogjak .gt_title {
+#naosnejlqv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -793,7 +801,7 @@ Financiamento Previsto
   border-bottom-width: 0;
 }
 
-#sqcntogjak .gt_subtitle {
+#naosnejlqv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -805,7 +813,7 @@ Financiamento Previsto
   border-top-width: 0;
 }
 
-#sqcntogjak .gt_heading {
+#naosnejlqv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -817,13 +825,13 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_bottom_border {
+#naosnejlqv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_col_headings {
+#naosnejlqv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -838,7 +846,7 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_col_heading {
+#naosnejlqv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -858,7 +866,7 @@ Financiamento Previsto
   overflow-x: hidden;
 }
 
-#sqcntogjak .gt_column_spanner_outer {
+#naosnejlqv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -870,15 +878,15 @@ Financiamento Previsto
   padding-right: 4px;
 }
 
-#sqcntogjak .gt_column_spanner_outer:first-child {
+#naosnejlqv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#sqcntogjak .gt_column_spanner_outer:last-child {
+#naosnejlqv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#sqcntogjak .gt_column_spanner {
+#naosnejlqv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -890,11 +898,11 @@ Financiamento Previsto
   width: 100%;
 }
 
-#sqcntogjak .gt_spanner_row {
+#naosnejlqv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#sqcntogjak .gt_group_heading {
+#naosnejlqv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -920,7 +928,7 @@ Financiamento Previsto
   text-align: left;
 }
 
-#sqcntogjak .gt_empty_group_heading {
+#naosnejlqv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -935,15 +943,15 @@ Financiamento Previsto
   vertical-align: middle;
 }
 
-#sqcntogjak .gt_from_md > :first-child {
+#naosnejlqv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#sqcntogjak .gt_from_md > :last-child {
+#naosnejlqv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#sqcntogjak .gt_row {
+#naosnejlqv .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -962,7 +970,7 @@ Financiamento Previsto
   overflow-x: hidden;
 }
 
-#sqcntogjak .gt_stub {
+#naosnejlqv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -975,7 +983,7 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#sqcntogjak .gt_stub_row_group {
+#naosnejlqv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -989,15 +997,15 @@ Financiamento Previsto
   vertical-align: top;
 }
 
-#sqcntogjak .gt_row_group_first td {
+#naosnejlqv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#sqcntogjak .gt_row_group_first th {
+#naosnejlqv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#sqcntogjak .gt_summary_row {
+#naosnejlqv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1007,16 +1015,16 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#sqcntogjak .gt_first_summary_row {
+#naosnejlqv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_first_summary_row.thick {
+#naosnejlqv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#sqcntogjak .gt_last_summary_row {
+#naosnejlqv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1026,7 +1034,7 @@ Financiamento Previsto
   border-bottom-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_grand_summary_row {
+#naosnejlqv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1036,7 +1044,7 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#sqcntogjak .gt_first_grand_summary_row {
+#naosnejlqv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1046,7 +1054,7 @@ Financiamento Previsto
   border-top-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_last_grand_summary_row_top {
+#naosnejlqv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1056,11 +1064,11 @@ Financiamento Previsto
   border-bottom-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_striped {
+#naosnejlqv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#sqcntogjak .gt_table_body {
+#naosnejlqv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1069,7 +1077,7 @@ Financiamento Previsto
   border-bottom-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_footnotes {
+#naosnejlqv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1083,7 +1091,7 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_footnote {
+#naosnejlqv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1092,7 +1100,7 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#sqcntogjak .gt_sourcenotes {
+#naosnejlqv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1106,7 +1114,7 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#sqcntogjak .gt_sourcenote {
+#naosnejlqv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1114,72 +1122,72 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#sqcntogjak .gt_left {
+#naosnejlqv .gt_left {
   text-align: left;
 }
 
-#sqcntogjak .gt_center {
+#naosnejlqv .gt_center {
   text-align: center;
 }
 
-#sqcntogjak .gt_right {
+#naosnejlqv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#sqcntogjak .gt_font_normal {
+#naosnejlqv .gt_font_normal {
   font-weight: normal;
 }
 
-#sqcntogjak .gt_font_bold {
+#naosnejlqv .gt_font_bold {
   font-weight: bold;
 }
 
-#sqcntogjak .gt_font_italic {
+#naosnejlqv .gt_font_italic {
   font-style: italic;
 }
 
-#sqcntogjak .gt_super {
+#naosnejlqv .gt_super {
   font-size: 65%;
 }
 
-#sqcntogjak .gt_footnote_marks {
+#naosnejlqv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#sqcntogjak .gt_asterisk {
+#naosnejlqv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#sqcntogjak .gt_indent_1 {
+#naosnejlqv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#sqcntogjak .gt_indent_2 {
+#naosnejlqv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#sqcntogjak .gt_indent_3 {
+#naosnejlqv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#sqcntogjak .gt_indent_4 {
+#naosnejlqv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#sqcntogjak .gt_indent_5 {
+#naosnejlqv .gt_indent_5 {
   text-indent: 25px;
 }
 
-#sqcntogjak .katex-display {
+#naosnejlqv .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#sqcntogjak div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#naosnejlqv div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1256,23 +1264,23 @@ Financiamento Previsto
 <p>Visualizar o financiamento proposto permite compreender de forma imediata como diferentes fontes estão a contribuir para a implementação das actividades planificadas no PES. A tabela abaixo apresenta o número de contribuições feitas por cada financiador (ou seja, quantas vezes essa fonte foi indicada para financiar as subactividade) e o respectivo montante total previsto. Esta informação ajuda a identificar desequilíbrios, dependências e oportunidades de reprogramação ou mobilização de fundos. Foram registadas 11 contribuições de financiamento. Os três principais financiadores em termos de montante são: Fundo Global, OIM e OE. A fonte com o menor volume de financiamento total até agora é GAVI, com apenas 2.000 MT atribuídos.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="aumrujsxim" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#aumrujsxim table {
+<div id="hklqxjnunx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hklqxjnunx table {
   font-family: 'Nunito Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#aumrujsxim thead, #aumrujsxim tbody, #aumrujsxim tfoot, #aumrujsxim tr, #aumrujsxim td, #aumrujsxim th {
+#hklqxjnunx thead, #hklqxjnunx tbody, #hklqxjnunx tfoot, #hklqxjnunx tr, #hklqxjnunx td, #hklqxjnunx th {
   border-style: none;
 }
 
-#aumrujsxim p {
+#hklqxjnunx p {
   margin: 0;
   padding: 0;
 }
 
-#aumrujsxim .gt_table {
+#hklqxjnunx .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1298,12 +1306,12 @@ Financiamento Previsto
   border-left-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_caption {
+#hklqxjnunx .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#aumrujsxim .gt_title {
+#hklqxjnunx .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1315,7 +1323,7 @@ Financiamento Previsto
   border-bottom-width: 0;
 }
 
-#aumrujsxim .gt_subtitle {
+#hklqxjnunx .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1327,7 +1335,7 @@ Financiamento Previsto
   border-top-width: 0;
 }
 
-#aumrujsxim .gt_heading {
+#hklqxjnunx .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1339,13 +1347,13 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_bottom_border {
+#hklqxjnunx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_col_headings {
+#hklqxjnunx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1360,7 +1368,7 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_col_heading {
+#hklqxjnunx .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1380,7 +1388,7 @@ Financiamento Previsto
   overflow-x: hidden;
 }
 
-#aumrujsxim .gt_column_spanner_outer {
+#hklqxjnunx .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1392,15 +1400,15 @@ Financiamento Previsto
   padding-right: 4px;
 }
 
-#aumrujsxim .gt_column_spanner_outer:first-child {
+#hklqxjnunx .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#aumrujsxim .gt_column_spanner_outer:last-child {
+#hklqxjnunx .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#aumrujsxim .gt_column_spanner {
+#hklqxjnunx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1412,11 +1420,11 @@ Financiamento Previsto
   width: 100%;
 }
 
-#aumrujsxim .gt_spanner_row {
+#hklqxjnunx .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#aumrujsxim .gt_group_heading {
+#hklqxjnunx .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1442,7 +1450,7 @@ Financiamento Previsto
   text-align: left;
 }
 
-#aumrujsxim .gt_empty_group_heading {
+#hklqxjnunx .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1457,15 +1465,15 @@ Financiamento Previsto
   vertical-align: middle;
 }
 
-#aumrujsxim .gt_from_md > :first-child {
+#hklqxjnunx .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#aumrujsxim .gt_from_md > :last-child {
+#hklqxjnunx .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#aumrujsxim .gt_row {
+#hklqxjnunx .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1484,7 +1492,7 @@ Financiamento Previsto
   overflow-x: hidden;
 }
 
-#aumrujsxim .gt_stub {
+#hklqxjnunx .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1497,7 +1505,7 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#aumrujsxim .gt_stub_row_group {
+#hklqxjnunx .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1511,15 +1519,15 @@ Financiamento Previsto
   vertical-align: top;
 }
 
-#aumrujsxim .gt_row_group_first td {
+#hklqxjnunx .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#aumrujsxim .gt_row_group_first th {
+#hklqxjnunx .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#aumrujsxim .gt_summary_row {
+#hklqxjnunx .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1529,16 +1537,16 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#aumrujsxim .gt_first_summary_row {
+#hklqxjnunx .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_first_summary_row.thick {
+#hklqxjnunx .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#aumrujsxim .gt_last_summary_row {
+#hklqxjnunx .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1548,7 +1556,7 @@ Financiamento Previsto
   border-bottom-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_grand_summary_row {
+#hklqxjnunx .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1558,7 +1566,7 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#aumrujsxim .gt_first_grand_summary_row {
+#hklqxjnunx .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1568,7 +1576,7 @@ Financiamento Previsto
   border-top-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_last_grand_summary_row_top {
+#hklqxjnunx .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1578,11 +1586,11 @@ Financiamento Previsto
   border-bottom-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_striped {
+#hklqxjnunx .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#aumrujsxim .gt_table_body {
+#hklqxjnunx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1591,7 +1599,7 @@ Financiamento Previsto
   border-bottom-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_footnotes {
+#hklqxjnunx .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1605,7 +1613,7 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_footnote {
+#hklqxjnunx .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1614,7 +1622,7 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#aumrujsxim .gt_sourcenotes {
+#hklqxjnunx .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1628,7 +1636,7 @@ Financiamento Previsto
   border-right-color: #D3D3D3;
 }
 
-#aumrujsxim .gt_sourcenote {
+#hklqxjnunx .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1636,72 +1644,72 @@ Financiamento Previsto
   padding-right: 5px;
 }
 
-#aumrujsxim .gt_left {
+#hklqxjnunx .gt_left {
   text-align: left;
 }
 
-#aumrujsxim .gt_center {
+#hklqxjnunx .gt_center {
   text-align: center;
 }
 
-#aumrujsxim .gt_right {
+#hklqxjnunx .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#aumrujsxim .gt_font_normal {
+#hklqxjnunx .gt_font_normal {
   font-weight: normal;
 }
 
-#aumrujsxim .gt_font_bold {
+#hklqxjnunx .gt_font_bold {
   font-weight: bold;
 }
 
-#aumrujsxim .gt_font_italic {
+#hklqxjnunx .gt_font_italic {
   font-style: italic;
 }
 
-#aumrujsxim .gt_super {
+#hklqxjnunx .gt_super {
   font-size: 65%;
 }
 
-#aumrujsxim .gt_footnote_marks {
+#hklqxjnunx .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#aumrujsxim .gt_asterisk {
+#hklqxjnunx .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#aumrujsxim .gt_indent_1 {
+#hklqxjnunx .gt_indent_1 {
   text-indent: 5px;
 }
 
-#aumrujsxim .gt_indent_2 {
+#hklqxjnunx .gt_indent_2 {
   text-indent: 10px;
 }
 
-#aumrujsxim .gt_indent_3 {
+#hklqxjnunx .gt_indent_3 {
   text-indent: 15px;
 }
 
-#aumrujsxim .gt_indent_4 {
+#hklqxjnunx .gt_indent_4 {
   text-indent: 20px;
 }
 
-#aumrujsxim .gt_indent_5 {
+#hklqxjnunx .gt_indent_5 {
   text-indent: 25px;
 }
 
-#aumrujsxim .katex-display {
+#hklqxjnunx .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#aumrujsxim div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#hklqxjnunx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1790,491 +1798,11 @@ Financiamento Previsto
 <p>Um histórico de versões das tabelas Excel geradas diariamente com a informação da KoboToolbox está disponível abaixo. Cada download contém folhas separadas para o PESOE, o Plano de Formação e o Quadro de Despesas.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="lkrlkbyzkn" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#lkrlkbyzkn table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#lkrlkbyzkn thead, #lkrlkbyzkn tbody, #lkrlkbyzkn tfoot, #lkrlkbyzkn tr, #lkrlkbyzkn td, #lkrlkbyzkn th {
-  border-style: none;
-}
-
-#lkrlkbyzkn p {
-  margin: 0;
-  padding: 0;
-}
-
-#lkrlkbyzkn .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#lkrlkbyzkn .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#lkrlkbyzkn .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#lkrlkbyzkn .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#lkrlkbyzkn .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#lkrlkbyzkn .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#lkrlkbyzkn .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#lkrlkbyzkn .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#lkrlkbyzkn .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#lkrlkbyzkn .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#lkrlkbyzkn .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#lkrlkbyzkn .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#lkrlkbyzkn .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#lkrlkbyzkn .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#lkrlkbyzkn .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#lkrlkbyzkn .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#lkrlkbyzkn .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#lkrlkbyzkn .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#lkrlkbyzkn .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#lkrlkbyzkn .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#lkrlkbyzkn .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#lkrlkbyzkn .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#lkrlkbyzkn .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#lkrlkbyzkn .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#lkrlkbyzkn .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#lkrlkbyzkn .gt_left {
-  text-align: left;
-}
-
-#lkrlkbyzkn .gt_center {
-  text-align: center;
-}
-
-#lkrlkbyzkn .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#lkrlkbyzkn .gt_font_normal {
-  font-weight: normal;
-}
-
-#lkrlkbyzkn .gt_font_bold {
-  font-weight: bold;
-}
-
-#lkrlkbyzkn .gt_font_italic {
-  font-style: italic;
-}
-
-#lkrlkbyzkn .gt_super {
-  font-size: 65%;
-}
-
-#lkrlkbyzkn .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#lkrlkbyzkn .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#lkrlkbyzkn .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#lkrlkbyzkn .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#lkrlkbyzkn .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#lkrlkbyzkn .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#lkrlkbyzkn .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#lkrlkbyzkn .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#lkrlkbyzkn div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-</style>
-
-<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-<thead>
-<tr class="gt_col_headings header">
-<th id="Data-do-Ficheiro" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Data do Ficheiro</th>
-<th id="Nome-do-Ficheiro" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Nome do Ficheiro</th>
-<th id="Download" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Download</th>
-</tr>
-</thead>
-<tbody class="gt_table_body">
-<tr class="odd">
-<td class="gt_row gt_right" headers="Data do Ficheiro">2025-07-13</td>
-<td class="gt_row gt_left" headers="Nome do Ficheiro">dnsp_pes_2025-07-13.xlsx</td>
-<td class="gt_row gt_center" headers="Download">[⬇️ Download](/Dataout/dnsp_pes_2025-07-13.xlsx)</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="Data do Ficheiro">2025-07-12</td>
-<td class="gt_row gt_left" headers="Nome do Ficheiro">dnsp_pes_2025-07-12.xlsx</td>
-<td class="gt_row gt_center" headers="Download">[⬇️ Download](/Dataout/dnsp_pes_2025-07-12.xlsx)</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_right" headers="Data do Ficheiro">2025-07-11</td>
-<td class="gt_row gt_left" headers="Nome do Ficheiro">dnsp_pes_2025-07-11.xlsx</td>
-<td class="gt_row gt_center" headers="Download">[⬇️ Download](/Dataout/dnsp_pes_2025-07-11.xlsx)</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_right" headers="Data do Ficheiro">2025-07-02</td>
-<td class="gt_row gt_left" headers="Nome do Ficheiro">dnsp_pes_2025-07-02.xlsx</td>
-<td class="gt_row gt_center" headers="Download">[⬇️ Download](/Dataout/dnsp_pes_2025-07-02.xlsx)</td>
-</tr>
-</tbody>
-</table>
-
+<div class="reactable html-widget html-fill-item" id="htmlwidget-ef03f7195306a56db29e" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ef03f7195306a56db29e">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Data do Ficheiro":["2025-07-13","2025-07-12","2025-07-11","2025-07-02"],"Nome do Ficheiro":["dnsp_pes_2025-07-13.xlsx","dnsp_pes_2025-07-12.xlsx","dnsp_pes_2025-07-11.xlsx","dnsp_pes_2025-07-02.xlsx"],"Download":["<a href=\"Dataout/dnsp_pes_2025-07-13.xlsx\" download>⬇️ Download<\/a>","<a href=\"Dataout/dnsp_pes_2025-07-12.xlsx\" download>⬇️ Download<\/a>","<a href=\"Dataout/dnsp_pes_2025-07-11.xlsx\" download>⬇️ Download<\/a>","<a href=\"Dataout/dnsp_pes_2025-07-02.xlsx\" download>⬇️ Download<\/a>"]},"columns":[{"id":"Data do Ficheiro","name":"Data do Ficheiro","type":"Date"},{"id":"Nome do Ficheiro","name":"Nome do Ficheiro","type":"character"},{"id":"Download","name":"Download","type":"character","html":true}],"highlight":true,"bordered":true,"striped":true,"dataKey":"4ffc478d358a3ed22175d956e4cc8697"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-</div>
+<p><a href="Dataout/dnsp_pes_2025-07-11.xlsx">Download test file</a></p>
 
 
 </section>
