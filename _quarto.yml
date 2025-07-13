@@ -1,8 +1,9 @@
   project:
     type: website
+    output-dir: _site
     resources:
-    - Images/
-    - Dataout/
+      - Images/**
+      - Dataout/**
   
   website:
     title: ""  # Leave title blank or very short to suppress default

@@ -28,7 +28,7 @@ library(dm)
 library(haven)
 library(gt)
 library(glue)
-
+library(reactable)
 
 ```
 
@@ -561,10 +561,38 @@ file_info <- tibble(
   date = as.Date(str_extract(basename(files), "\\d{4}-\\d{2}-\\d{2}"))
 ) %>%
   arrange(desc(date)) %>%
-  mutate(link = glue("[⬇️ Download](/Dataout/{name})"))
+  mutate(
+    link = glue('<a href="Dataout/{name}" download>⬇️ Download</a>') %>% as.character()
+  )
 
+# Prepare file_info with download column first
+file_info <- tibble(
+  file = files,
+  name = basename(files),
+  date = as.Date(str_extract(basename(files), "\\d{4}-\\d{2}-\\d{2}"))
+) %>%
+  arrange(desc(date)) %>%
+  mutate(
+    Download = glue('<a href="Dataout/{name}" download>⬇️ Download</a>') %>% as.character()
+  )
+
+# Then select & render with reactable
 file_info %>%
-  select(`Data do Ficheiro` = date, `Nome do Ficheiro` = name, `Download` = link) %>%
-  gt()
+  select(
+    `Data do Ficheiro` = date,
+    `Nome do Ficheiro` = name,
+    Download
+  ) %>%
+  reactable(
+    columns = list(
+      Download = colDef(html = TRUE)
+    ),
+    bordered = TRUE,
+    striped = TRUE,
+    highlight = TRUE
+  )
+
+
 ```
+[Download test file](Dataout/dnsp_pes_2025-07-11.xlsx)
 

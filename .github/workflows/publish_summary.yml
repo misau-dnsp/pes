@@ -34,7 +34,7 @@ jobs:
           Rscript -e 'install.packages(
             c(
               "dplyr", "readr", "ggplot2", "stringr", "tibble", "purrr", "forcats",
-              "tidyr", "lubridate",
+              "tidyr", "lubridate", "reactable",
               "ggthemes", "robotoolbox", "dm", "haven", "gt", "glue"
             ),
             repos = "https://cloud.r-project.org"
