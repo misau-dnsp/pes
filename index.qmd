@@ -578,14 +578,19 @@ file_info <- tibble(
 
 # Then select & render with reactable
 file_info %>%
+  mutate(
+    `Download do Ficheiro` = glue(
+      '<a href="Dataout/{name}" download>{name}</a>'
+    ) %>% as.character()
+  ) %>%
   select(
-    `Data do Ficheiro` = date,
-    `Nome do Ficheiro` = name,
-    Download
+    `Data do Versão` = date,
+    `Download do Ficheiro`
   ) %>%
   reactable(
     columns = list(
-      Download = colDef(html = TRUE)
+      `Data do Versão` = colDef(width = 200),
+      `Download do Ficheiro` = colDef(html = TRUE, width = 250)
     ),
     bordered = TRUE,
     striped = TRUE,
@@ -594,5 +599,4 @@ file_info %>%
 
 
 ```
-[Download test file](Dataout/dnsp_pes_2025-07-11.xlsx)
 
