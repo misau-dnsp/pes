@@ -242,10 +242,49 @@ val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>%
 
 ### Sumário da Actividades
 
-O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das subactividades dos seus vários programas (como Nutrição, PAV, COESP, entre outros). Cada programa propõe as suas intervenções e, em articulação com a liderança da DNSP assegura que as propostas estejam alinhadas com as prioridades nacionais, identifique sinergias entre programas e oriente eventuais revisões para promover maior integração e impacto do Plano. Ao longo do ano, a DNSP acompanha a execução do PES utilizando as subactividades como base para monitorar a implementação e a utilização de recursos.
+O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das subactividades dos seus vários programas. Cada um deles propõe as suas intervenções assegurando alinhamento com as prioridades nacionais. Ao longo do ano, a DNSP acompanha a execução do PES utilizando as subactividades como base para monitorar a implementação e a utilização de recursos.
 
-Até ao dia em que este relatório foi elaborado (`r dt`), o pessoal do programa da DNSP tinha proposto um total de `r val_n_activities` actividades para o ano de 2026.  O custo total dessas actividades, de acordo com as estimativas de custos fornecidas pelos programas que as propõem, é de `r val_cost_activities` MT. A tabela abaixo resume o número e o custo das subactividades propostas por cada programa do DNSP que introduziu dados na plataforma KoboToolbox utilizada para o planeamento do PES do DNSP. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total estimado de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O programa com o maior número de actividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]`, com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)` subactividades.
+Até ao dia em que este resumo foi gerado (`r dt`), os programas da DNSP tinha proposto um total de `r val_n_activities` actividades para o PES de 2026.  O custo total dessas actividades, de acordo com as estimativas de custo, é de `r val_cost_activities` MT. A tabela abaixo resume o número e o custo das subactividades propostas por cada programa do DNSP que introduziu dados na plataforma KoboToolbox utilizada para o planeamento do PES do DNSP. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total estimado de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O programa com o maior número de actividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]`, com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)` subactividades.
 
+
+```{r submission-chronology, fig.width=6.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
+
+df_submission_chron <- asset_df$main %>%
+  select(`_submission_time`, responsavel_programa) %>%
+  mutate(`_submission_time` = as_date(`_submission_time`),
+         responsavel_programa = as_factor(responsavel_programa)) 
+
+
+df_submission_chron %>% 
+  ggplot(aes(`_submission_time`)) +
+  geom_bar(fill = "#2780e3", width = 0.6) +
+  scale_x_date(
+    date_breaks = "1 day",
+    date_labels = "%d-%m-%y"
+  ) +
+  labs(
+    title = "Submissão de Actividades PES por Dia",
+    caption = "Fonte: DNSP KoboToolbox",
+    x = NULL,
+    y = NULL,
+    color = "Programa"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.background = element_rect(fill = NA, color = NA),
+    plot.background = element_rect(fill = NA, color = NA),
+    legend.background = element_rect(fill = NA, color = NA),
+    legend.box.background = element_rect(fill = NA, color = NA),
+    plot.title = element_text(size = 12, face = "italic", hjust = 0),
+    plot.caption = element_text(margin = margin(t = 10), size = 9, hjust = 1, face = "italic"),
+    legend.position = "none",
+    axis.text.x = element_text(size = 9, angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 9),
+    panel.grid.minor = element_blank()
+  )
+
+
+```
 
 ```{r plot-programa-table}
 
