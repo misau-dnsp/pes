@@ -254,7 +254,6 @@ df_submission_chron <- asset_df$main %>%
   mutate(`_submission_time` = as_date(`_submission_time`),
          responsavel_programa = as_factor(responsavel_programa)) 
 
-
 max_count <- max(table(df_submission_chron$`_submission_time`))
 
 df_submission_chron %>% 
