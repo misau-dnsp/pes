@@ -255,12 +255,19 @@ df_submission_chron <- asset_df$main %>%
          responsavel_programa = as_factor(responsavel_programa)) 
 
 
+max_count <- max(table(df_submission_chron$`_submission_time`))
+
 df_submission_chron %>% 
   ggplot(aes(`_submission_time`)) +
-  geom_bar(fill = "#2780e3", width = 0.6) +
+  geom_bar(fill = "#2780e3", width = 0.7) +
   scale_x_date(
     date_breaks = "1 day",
-    date_labels = "%d-%m-%y"
+    date_labels = "%b %d"  # abbreviated month + day
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, max_count + 1, by = 1),  # Tick every 1 unit
+    limits = c(0, max_count + 1),
+    expand = c(0, 0)
   ) +
   labs(
     title = "Submissão de Actividades PES por Dia",
