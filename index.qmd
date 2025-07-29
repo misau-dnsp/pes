@@ -34,6 +34,9 @@ library(reactable)
 
 ```{r, load-global-variables}
 
+# PES year
+ano_pes <- "2026"
+
 # variable vector for kobo label substitution
 columns_to_label <- c("responsavel_programa", 
                       "responsavel_pf_ma", 

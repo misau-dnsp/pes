@@ -1,4 +1,9 @@
 
+# PENDING ITEMS -----------------------------------------------------------
+# See if there is another way to filter all data for pes year
+# See if there is a way to avoid errors when certain tables are not present (for example when certain types of data have not been entered into kobo)
+# Have to make it so when certain tables are not present that code still works
+
 # DEPENDENCIES ---------------------------------------------------------
 
 library(ggplot2)
@@ -19,7 +24,13 @@ library(glue)
 library(openxlsx)
 library(scales)
 
+# PES year
+ano_pes <- "2026"
+
+
 # GLOBAL VARIABLES ---------------------------------------------------------
+
+
 
 # Kobo connection
 Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
@@ -102,29 +113,69 @@ mapa_financiador <- c(
 )
 
 # PES activity map for recoding
+# mapa_objectivos_esp <- tibble::tibble(
+#   actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:20)),
+#   label = c(
+#     "Reduzir a morbi-mortalidade através da expansão e melhoria da Qualidade dos Cuidados e Serviços de Saúde Materna",
+#     "Expandir e melhorar a Qualidade dos Cuidados e Serviços de Saúde Sexual e Reprodutiva",
+#     "Reduzir a mortalidade em crianças menores de 5 anos",
+#     "Contribuir para a redução da morbimortalidade infantil, por desnutrição",
+#     "Reduzir a prevalência e mortalidade das doenças preveníveis através de vacinas",
+#     "Aumentar o número de adultos e de crianças vivendo com HIV que beneficiam de TARV",
+#     "Reduzir a taxa de transmissão do HIV de mãe para filho",
+#     "Contribuir para a redução da incidência e da morbimortalidade por tuberculose",
+#     "Reduzir para metade a morbi-mortalidade por malária",
+#     "Reduzir o peso das DNT e mitigar o seu impacto socioeconómico",
+#     "Reduzir a prevalência das doenças tropicais negligenciadas na comunidade",
+#     "Melhorar o acesso e a qualidade dos Cuidados e Serviços de Saúde Sexual e Reprodutiva para Adolescentes e Jovens",
+#     "Contribuir para o estabelecimento de um ambiente escolar seguro, saudável e favorável à boa aprendizagem e ao desenvolvimento harmonioso do aluno",
+#     "Contribuir para a redução do peso da doença através da adopção de estilos de vida saudáveis e da redução dos comportamentos de risco para a saúde",
+#     "Prevenir e reduzir a morbilidade causada por perturbações mentais e de comportamento, doenças neuropsiquiátricas e distúrbios psicossociais, incluindo o consumo abusivo de drogas, sobretudo álcool e tabaco",
+#     "Contribuir para a redução da ocorrência/frequência de surtos/epidemias com ênfase na erradicação da Pólio e eliminação do Sarampo",
+#     "Contribuir para o fortalecimento da capacidade de gestão de emergências de saúde pública, deteção precoce e resposta atempada a eventos de saúde pública",
+#     "Contribuir para a redução da incidência e prevalência de doenças relacionadas com determinantes ambientais de saúde",
+#     "Contribuir para o bem-estar de saúde dos atletas e praticantes do exercício físico",
+#     "Estabelecer um programa de saúde da terceira idade com vista a melhorar a qualidade de vida dos idosos"
+#   )
+# )
+
 mapa_objectivos_esp <- tibble::tibble(
-  actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:20)),
+  actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:34)),
   label = c(
-    "Reduzir a morbi-mortalidade através da expansão e melhoria da Qualidade dos Cuidados e Serviços de Saúde Materna",
-    "Expandir e melhorar a Qualidade dos Cuidados e Serviços de Saúde Sexual e Reprodutiva",
-    "Reduzir a mortalidade em crianças menores de 5 anos",
-    "Contribuir para a redução da morbimortalidade infantil, por desnutrição",
-    "Reduzir a prevalência e mortalidade das doenças preveníveis através de vacinas",
-    "Aumentar o número de adultos e de crianças vivendo com HIV que beneficiam de TARV",
-    "Reduzir a taxa de transmissão do HIV de mãe para filho",
-    "Contribuir para a redução da incidência e da morbimortalidade por tuberculose",
-    "Reduzir para metade a morbi-mortalidade por malária",
-    "Reduzir o peso das DNT e mitigar o seu impacto socioeconómico",
-    "Reduzir a prevalência das doenças tropicais negligenciadas na comunidade",
-    "Melhorar o acesso e a qualidade dos Cuidados e Serviços de Saúde Sexual e Reprodutiva para Adolescentes e Jovens",
-    "Contribuir para o estabelecimento de um ambiente escolar seguro, saudável e favorável à boa aprendizagem e ao desenvolvimento harmonioso do aluno",
-    "Contribuir para a redução do peso da doença através da adopção de estilos de vida saudáveis e da redução dos comportamentos de risco para a saúde",
-    "Prevenir e reduzir a morbilidade causada por perturbações mentais e de comportamento, doenças neuropsiquiátricas e distúrbios psicossociais, incluindo o consumo abusivo de drogas, sobretudo álcool e tabaco",
-    "Contribuir para a redução da ocorrência/frequência de surtos/epidemias com ênfase na erradicação da Pólio e eliminação do Sarampo",
-    "Contribuir para o fortalecimento da capacidade de gestão de emergências de saúde pública, deteção precoce e resposta atempada a eventos de saúde pública",
-    "Contribuir para a redução da incidência e prevalência de doenças relacionadas com determinantes ambientais de saúde",
-    "Contribuir para o bem-estar de saúde dos atletas e praticantes do exercício físico",
-    "Estabelecer um programa de saúde da terceira idade com vista a melhorar a qualidade de vida dos idosos"
+    "Formar médicos especialistas, técnicos médios e especializados com qualidade",
+    "Fortalecer a formação contínua de profissionais de saúde para uma melhor oferta de cuidados",
+    "Melhorar o rácio de profissionais de regime especial através de provisão de mais profissionais de saúde qualificados",
+    "Operacionalizar o sub-sistema de saúde comunitária tendo em conta abordagem de género",
+    "Expandir e equipar unidades sanitárias com  enfoque de atenção primária",
+    "Reforçar o sistema de referência e contra referência",
+    "Reforçar as capacidades técnicas e operacionais em Água, Saneamento e Higiene (WASH) nas unidades sanitárias, incluindo a gestão de resíduos biomédicos e o fortalecimento dos laboratórios de controlo de qualidade de água e alimentos",
+    "Reforçar as capacidades de alerta precoce/vigilância, diagnóstico, intervenção e coordenação intersectorial para responder a eventos que ameaçam a saúde pública",
+    "Consolidar a implementação das acções de prevenção dos principais problemas de saúde pública do país como Malária, TB, HIV, doenças preveníveis e outras não transmissíveis",
+    "Expandir o acesso e a retenção em tratamento antirretroviral (TARV) para todas as pessoas vivendo com HIV, com enfoque na aceleração da cobertura entre adultos e crianças",
+    "Expandir a cobertura da identificação e tratamento da desnutrição aguda em crianças menores de 2 anos, com implementação do PIN",
+    "Expandir e suster programas de promoção de saúde, estilos de vida saudáveis e prevenção de doenças para reduzir a incidência de doenças",
+    "Desenvolver acções de mitigação dos principais factores de risco para a saúde,  incluindo trauma",
+    "Consolidar parcerias com a medicina tradicional e liderança comunitária",
+    "Implementar sistemas de monitoria em tempo real para identificar rapidamente surtos e tendências de doenças para preparar e responder adequadamente",
+    "Treinar continuamente a equipe de emergência em estratégias de prevenção, controlo de doenças e resposta rápida",
+    "Garantiar de Acesso Universal e Integrado a Serviços Essenciais de Saúde Sexual, Reprodutiva, Materna e Infantil",
+    "Fortalecer a qualidade assistencial e humanizada nas US",
+    "Adoptar padrões de segurança do paciente e dos profissionais",
+    "Definir e arquitectar os sistemas interoperáveis para gestão e logística de medicamentos e produtos médicos (assegurar a interoperabilidade dos sistemas de informação para a gestão, logística de medicamentos e produtos de saúde)",
+    "Fortalecer os sistemas de previsão, aquisição e distribuição (via CMAM)",
+    "Elaborar normas e regulamentos que facilitem investimentos PPP para impulsionar a produção local",
+    "Interoperar o sistema de informação para a gestão, planificação, monitoria e avaliação",
+    "Implementar os sistemas de alerta e resposta precoce, sistema integrado de vigilância e monitorização, gestão integrada de vectores",
+    "Reforcar a capacidade de diagnóstico para laboratórios de análise toxicológica",
+    "Reforçar a planificação integrada entre o Sector da Saúde e Parceiros para alinhamento das intervenções e do financiamento",
+    "Reforçar as competências sobre gestão e liderança dos gestores dos Sub -Sistemas Público e Comunitário de Saúde",
+    "Implementar tecnologias de telemedicina e/ou saúde digital para alcançar comunidades remotas",
+    "Garantir a digitalização dos processos de gestão das US",
+    "Introduzir um sistema de contabilidade analítica para a categorização detalhada dos custos por cuidados prestados",
+    "Institucionalizar as Contas Satélites de Saúde",
+    "Melhorar o rácio de profissionais de regime especial através de provisão de mais profissionais de saúde qualificados",
+    "Reforçar a capacidade técnica em gestão de Finanças Públicas no sector da saúde, fortalecendo a programação, execução e a monitoria orçamental",
+    "Introduzir o mapeamento dos fundos (externos) e rastreio das despesas (RMET)"
   )
 )
 
@@ -135,7 +186,8 @@ mapa_objectivos_esp <- tibble::tibble(
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  filter(name == "DNSP PES 2026 Final v3") %>%
+  #filter(name == "DNSP PES 2026 Final v3") %>%
+  filter(name == "DNSP PES 2026 Final v4") %>%
   pull(uid) %>%
   first()
 
@@ -155,6 +207,7 @@ rm(assets, asset_list, uid)
 
 # Create dataframe for activity and subactivity codes
 df_codigos <- asset_df$main %>% 
+  filter(ano_subactividade == ano_pes) %>% 
   select(`_index`,
          responsavel_programa,
          starts_with("objectivo_especifico_objective")) %>% 
@@ -182,12 +235,18 @@ df_codigos <- asset_df$main %>%
          codigo_actividade,
          codigo_subactividade)
 
+vec_subactividades <- df_codigos %>% 
+  distinct(`_index`) %>% 
+  pull()
+
 rm(mapa_objectivos_esp)
 
 
 # CURATE GEOTARGETS -----------------------------------------------------
 
 df_metas <- asset_df$tbl_geografia_impl %>% 
+  # Filter table for parameterized pes years
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   # Pivot geographic target table wide
   select(`_parent_index`, geo_nome_geo_label, meta_geo) %>% 
   mutate(
@@ -244,6 +303,8 @@ month_week_levels <- full_year$month_week
 
 # Identify calendar weeks where subactivity occurs
 df_calendar_long <- asset_df$tbl_datas_impl %>%
+  # Filter table for parameterized pes years
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   select(`_parent_index`, subactividade_data_inicio, subactividade_data_fim) %>%
   rowwise() %>%
   mutate(dates = list(seq(subactividade_data_inicio, subactividade_data_fim, by = "1 day"))) %>%
@@ -259,6 +320,7 @@ df_calendar_long <- asset_df$tbl_datas_impl %>%
 
 # Extract unique parent indexes from kobo data
 parent_ids <- asset_df$tbl_datas_impl %>%
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   distinct(`_parent_index`) %>%
   pull()
 
@@ -280,6 +342,7 @@ df_calendario <- full_grid %>%
 
 # Create subactivity duration used in PdF
 df_calendar_duracao <- asset_df$tbl_datas_impl %>%
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   mutate(duracao_dias = interval(ymd(subactividade_data_inicio), ymd(subactividade_data_fim)) %/% days(1)) %>% 
   select(`_parent_index`, duracao_dias) %>% 
   group_by(`_parent_index`) %>% 
@@ -291,6 +354,7 @@ rm(full_year, month_week_levels, df_calendar_long, full_grid, parent_ids)
 # CURATE FINANCIADOR ---------------------------------------------
 
 df_financiador_outro <- asset_df$tbl_financiamento_outro %>% 
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   mutate(
     financiador = pmap_chr(
       list(financiamento_outro_especificacao, financiamento_outro_especificacao_),
@@ -317,6 +381,7 @@ df_financiador_outro <- asset_df$tbl_financiamento_outro %>%
   )
 
 df_financiador <- asset_df$main %>%
+  filter(`_index` %in% vec_subactividades) %>% 
   # Subset variables and convert values to labels
   mutate(
     across(any_of(vars_to_label), as_factor),
@@ -347,6 +412,7 @@ rm(df_financiador_outro)
 # FINALIZE PESOE --------------------------------------------------------------
 
 df_pes <- asset_df$main %>%
+  filter(`_index` %in% vec_subactividades) %>% 
   # Subset variables and convert values to labels
   select(any_of(vars_pesoe)) %>%
   mutate(
@@ -409,6 +475,7 @@ output_pesoe <- df_pes %>%
 # FINALIZE PDF -------------------------------------------------------------
 
 output_pdf <- asset_df$main %>%
+  filter(`_index` %in% vec_subactividades) %>% 
   filter(subactividade_tipo == "formacao_capacitacao") %>% 
   # Subset variables and convert values to labels
   select(any_of(vars_pdf)) %>%
@@ -440,6 +507,7 @@ output_pdf <- asset_df$main %>%
 # FINALIZE TTD -----------------------------------------------------------
 
 df_ttd <- asset_df$main %>% 
+  filter(`_index` %in% vec_subactividades) %>% 
   select(c(`_index`,
            subactividade_local,
            calc_custo_viagem_ajudas,
