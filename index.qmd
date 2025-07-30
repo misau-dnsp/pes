@@ -42,7 +42,7 @@ ano_pes <- "2026"
 columns_to_label <- c("responsavel_programa", 
                       "responsavel_pf_ma", 
                       "subactividade_tipo", 
-                      "objectivo_especifico", 
+                      #"objectivo_especifico", 
                       "objectivo_pess", 
                       "subactividade_local")
 
