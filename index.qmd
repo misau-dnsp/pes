@@ -28,6 +28,7 @@ library(dm)
 library(haven)
 library(gt)
 library(glue)
+library(scales)
 library(reactable)
 
 ```
@@ -99,7 +100,6 @@ gen_tbl_financiador <- function(df, breakdown = financiador_detalhe) {
 
 ```
 
-
 ```{r load-kobo-creds}
 
 Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
@@ -113,7 +113,6 @@ kobo_setup(
 
 ```
 
-
 ```{r load-kobo-data}
 
 # timestamp of data pull
@@ -123,7 +122,7 @@ dt <- today()
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  filter(name == "DNSP PES 2026 Final v3") %>%
+  filter(name == "DNSP PES 2026 Final v4") %>%
   pull(uid) %>% first()
 
 asset <- kobo_asset(uid)
@@ -135,20 +134,26 @@ rm(assets, asset, uid)
 
 ```
 
-
 ```{r  munge-data}
 
 # df main for... only activity count at present
 df_main <- asset_df$main %>%
+  filter(ano_subactividade == ano_pes) %>% 
   mutate(across(all_of(columns_to_label), as_factor))
 
+vec_subactividades <- df_main %>% 
+  distinct(`_index`) %>% 
+  pull()
+
 # df dates for ...
-df_dates <- asset_df$tbl_datas_impl
+df_dates <- asset_df$tbl_datas_impl %>% 
+  filter(`_parent_index` %in% vec_subactividades)
 
 # df main & dates for gantt plot
 df_main_dates <- asset_df %>%
   dm_flatten_to_tbl(.start = tbl_datas_impl,
                     .join = left_join) %>% 
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   mutate(across(all_of(columns_to_label), as_factor)) %>% 
   select(
     responsavel_programa,
@@ -183,7 +188,7 @@ df_main_dates <- df_main_dates %>%
 df_main_financ <- asset_df %>%
   dm_flatten_to_tbl(.start = tbl_financiamento_outro,
                     .join = left_join) %>% 
-  
+  filter(`_parent_index` %in% vec_subactividades) %>% 
   mutate(across(all_of(columns_to_label), as_factor)) %>% 
   
   select(c(columns_to_label),
@@ -233,6 +238,7 @@ val_n_activities <- nrow(df_main)
 # summary tables by type, program, and donor
 tbl_activities_type <- gen_tbl_activities(df_main)
 tbl_activities_programa <- gen_tbl_activities(df_main, breakdown = "responsavel_programa")
+tbl_activities_objectivo <- gen_tbl_activities(df_main, breakdown = "objectivo_pess")
 tbl_financiamento_financiador <- gen_tbl_financiador(df_main_financ)
 
 
@@ -253,6 +259,7 @@ Até ao dia em que este resumo foi gerado (`r dt`), os programas da DNSP tinha p
 ```{r submission-chronology, fig.width=6.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
 
 df_submission_chron <- asset_df$main %>%
+  filter(`_index` %in% vec_subactividades) %>% 
   select(`_submission_time`, responsavel_programa) %>%
   mutate(`_submission_time` = as_date(`_submission_time`),
          responsavel_programa = as_factor(responsavel_programa)) 
@@ -383,6 +390,127 @@ tbl_activities_programa %>%
 
 ```
 
+```{r plot-objectivo-table}
+
+columns_gt_numeric <- tbl_activities_objectivo %>%
+  select(where(is.numeric)) %>%
+  colnames()
+
+tbl_activities_objectivo %>%
+  gt() %>%
+ 
+  # General table options
+  tab_options(
+    table.font.names = c("Nunito Sans", "sans-serif"),
+    table.align = "left",
+    table.width = pct(80)
+  ) %>%
+ 
+  # Column spanner
+   tab_spanner(
+    label = "Financiamento Previsto",
+    columns = c(financiamento_oe, financiamento_prosaude, financiamento_outro_total)
+  ) %>%
+ 
+  # Spanner styles
+  tab_style(
+    style = cell_text(size = px(13), weight = "bold", align = "center"),
+    locations = cells_column_spanners()
+  ) %>%
+ 
+  # Header styles
+  tab_style(
+    style = cell_text(size = px(13), weight = "bold", align = "center"),
+    locations = cells_column_labels()
+  ) %>%
+ 
+  tab_style(
+    style = cell_text(size = px(13), weight = "bold", align = "left"),
+    locations = cells_column_labels(columns = objectivo_pess)
+  ) %>%
+ 
+  # Body styles
+  tab_style(
+    style = cell_text(size = px(13), color = "#1C2826", align = "center"),
+    locations = cells_body()
+  ) %>%
+ 
+  tab_style(
+    style = cell_text(size = px(13), align = "left"),
+    locations = cells_body(columns = objectivo_pess)
+  ) %>%
+ 
+    tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(rows = objectivo_pess == "Total")
+  ) %>%
+
+  # Column names
+  cols_label(
+    objectivo_pess = "Objectivo PESS",
+    n = "Qd.",
+    calc_custo_total = "Custo",
+    financiamento_oe = "OE",
+    financiamento_prosaude = "ProSaude",
+    financiamento_outro_total = "Outro",
+    calc_financiamento_lacuna = "Lacuna"
+  ) %>%
+ 
+  # Column widths
+  cols_width(
+    objectivo_pess ~ px(300),
+    n ~ px(75),
+    calc_custo_total ~ px(100),
+    financiamento_oe ~ px(100),
+    financiamento_prosaude ~ px(100),
+    financiamento_outro_total ~ px(100),
+    calc_financiamento_lacuna ~ px(100)
+  ) %>%
+ 
+  # Number formatting
+  fmt_number(
+    columns = all_of(columns_gt_numeric),
+    decimals = 0,
+    sep_mark = ".",
+    dec_mark = ","
+  )
+
+
+```
+
+```{r plot-objectivo-plot, fig.width=8.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
+
+columns_gt_numeric <- tbl_activities_objectivo %>%
+  select(where(is.numeric)) %>%
+  colnames()
+
+tbl_activities_objectivo %>% 
+  filter(objectivo_pess != "Total") %>% 
+  mutate(
+    objectivo_pess = str_wrap(objectivo_pess, width = 50),  # wrap after ~25 characters
+    objectivo_pess = fct_reorder(objectivo_pess, calc_custo_total)
+  ) %>% 
+  ggplot(aes(calc_custo_total, objectivo_pess)) +
+  geom_col(fill = "#2780e3") +
+    geom_text(
+    aes(label = comma(calc_custo_total)),
+    hjust = 0,
+    nudge_x = 0.01 * max(tbl_activities_objectivo$calc_custo_total, na.rm = TRUE),
+    size = 3.5
+  ) +
+  scale_x_continuous(labels = label_number(scale = 1/1000, suffix = " MT"),
+                         expand = expansion(mult = c(0, 0.2))  # add 10% padding on the right
+  ) +
+  labs(
+    title = "Custo Total das Subactividades por Objectico PESS",
+    x = "Custo (Milhares de MT)",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 13)
+
+
+```
+
 A tabela abaixo apresenta um resumo das subactividades propostas organizadas por tipo de intervenção. Para cada tipo de subactividade, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O tipo de subactividade com o maior orçamento total proposto é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"])]`, com um custo estimado de `r scales::comma(max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O tipo com o maior número de actividades propostas é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"])]`, com `r max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE)` subactividades.
 
 
@@ -474,9 +602,7 @@ tbl_activities_type %>%
 
 ```
 
-
 Visualizar o financiamento proposto permite compreender de forma imediata como diferentes fontes estão a contribuir para a implementação das actividades planificadas no PES. A tabela abaixo apresenta o número de contribuições feitas por cada financiador (ou seja, quantas vezes essa fonte foi indicada para financiar as subactividade) e o respectivo montante total previsto. Esta informação ajuda a identificar desequilíbrios, dependências e oportunidades de reprogramação ou mobilização de fundos. Foram registadas `r sum(tbl_financiamento_financiador$n[tbl_financiamento_financiador$financiador_detalhe != "Total"], na.rm = TRUE)` contribuições de financiamento. Os três principais financiadores em termos de montante são: `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][1]`, `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][2]` e `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][3]`. A fonte com o menor volume de financiamento total até agora é `r tbl_financiamento_financiador$financiador_detalhe[which.min(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"])]`, com apenas `r scales::comma(min(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT atribuídos.
-
 
 ```{r plot-financiamento-table}
 
