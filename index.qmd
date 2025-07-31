@@ -1,5 +1,5 @@
 ---
-title: "Plano Económico Social 2026"
+title: "Plano Económico Social"
 format:
   html:
     title-block: true
@@ -35,7 +35,7 @@ library(reactable)
 
 ```{r, load-global-variables}
 
-# PES year
+# PES year to summarize
 ano_pes <- "2026"
 
 # variable vector for kobo label substitution
@@ -191,7 +191,7 @@ df_main_financ <- asset_df %>%
   filter(`_parent_index` %in% vec_subactividades) %>% 
   mutate(across(all_of(columns_to_label), as_factor)) %>% 
   
-  select(c(columns_to_label),
+  select(any_of(columns_to_label),
          starts_with("financiamento_"),
          -all_of(starts_with(c("financiamento_outro_especificacao_fonte_", 
                                "financiamento_outro_total.")))) %>% 
@@ -249,14 +249,12 @@ val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>%
 
 ```
 
-### Sumário da Actividades
+### Contextualização
 
-O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das subactividades dos seus vários programas. Cada um deles propõe as suas intervenções assegurando alinhamento com as prioridades nacionais. Ao longo do ano, a DNSP acompanha a execução do PES utilizando as subactividades como base para monitorar a implementação e a utilização de recursos.
-
-Até ao dia em que este resumo foi gerado (`r dt`), os programas da DNSP tinha proposto um total de `r val_n_activities` actividades para o PES de 2026.  O custo total dessas actividades, de acordo com as estimativas de custo, é de `r val_cost_activities` MT. A tabela abaixo resume o número e o custo das subactividades propostas por cada programa do DNSP que introduziu dados na plataforma KoboToolbox utilizada para o planeamento do PES do DNSP. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total estimado de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O programa com o maior número de actividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]`, com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)` subactividades.
+O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das actividades e assegurando alinhamento com as prioridades nacionais definidos no Plano Estratégico do Sector da Saúde (PESS). Para o ciclo do PES do ano `r ano_pes` os programas da DNSP tem proposto um total de `r val_n_activities` subactividades até ao dia `r format(dt, "%B %d, %Y")`. O gráfico abaixo mostra as submissões por dia inseridas na plataforma KoboToolbox, concebida para a gestão de informações PES da DNSP.
 
 
-```{r submission-chronology, fig.width=6.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
+```{r submission-chronology-plot, fig.width=6.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
 
 df_submission_chron <- asset_df$main %>%
   filter(`_index` %in% vec_subactividades) %>% 
@@ -280,7 +278,6 @@ df_submission_chron %>%
   ) +
   labs(
     title = "Submissão de Actividades PES por Dia",
-    caption = "Fonte: DNSP KoboToolbox",
     x = NULL,
     y = NULL,
     color = "Programa"
@@ -292,7 +289,6 @@ df_submission_chron %>%
     legend.background = element_rect(fill = NA, color = NA),
     legend.box.background = element_rect(fill = NA, color = NA),
     plot.title = element_text(size = 12, face = "italic", hjust = 0),
-    plot.caption = element_text(margin = margin(t = 10), size = 9, hjust = 1, face = "italic"),
     legend.position = "none",
     axis.text.x = element_text(size = 9, angle = 45, hjust = 1),
     axis.text.y = element_text(size = 9),
@@ -302,7 +298,12 @@ df_submission_chron %>%
 
 ```
 
-```{r plot-programa-table}
+### Resumo do PES `r ano_pes`
+#### Sumário por Programa
+
+A tabela abaixo apresenta um resumo das subactividades propostas organizadas por programa. Para cada programa, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O programa com o maior número de subactividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]` com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)`. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total valor de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. 
+
+```{r summary-programa-table}
 
 columns_gt_numeric <- tbl_activities_programa %>%
   select(where(is.numeric)) %>%
@@ -390,7 +391,11 @@ tbl_activities_programa %>%
 
 ```
 
-```{r plot-objectivo-plot, fig.width=12, fig.height=4, fig.align='center', fig.bg="transparent"}
+#### Sumário por Objectivo PESS
+
+Os custos orçamentados para as subaxtividades propostas podem ser directamente associados ao objetivo do PESS ao qual respondem. Como mostra o gráfico abaixo, o objectivo PESS que recebe o maior investimento financeiro é o objectivo intitulado "`r tbl_activities_objectivo$objectivo_pess[which.max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"])]`" com um custo total alocado de `r scales::comma(max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT.
+
+```{r cost-objective-graph, fig.width=12, fig.height=3.5, fig.align='left', fig.bg="transparent"}
 
 columns_gt_numeric <- tbl_activities_objectivo %>%
   select(where(is.numeric)) %>%
@@ -399,7 +404,7 @@ columns_gt_numeric <- tbl_activities_objectivo %>%
 tbl_activities_objectivo %>% 
   filter(objectivo_pess != "Total") %>% 
   mutate(
-    objectivo_pess = str_wrap(objectivo_pess, width = 50),  # wrap after ~25 characters
+    objectivo_pess = str_wrap(objectivo_pess, width = 65),  # wrap after n characters
     objectivo_pess = fct_reorder(objectivo_pess, calc_custo_total)
   ) %>% 
   ggplot(aes(calc_custo_total, objectivo_pess)) +
@@ -429,11 +434,11 @@ tbl_activities_objectivo %>%
   )
 
 
-
 ```
 
+A tabela abaixo fornece detalhes sobre as fontes de financiamento e as lacunas orçamentárias para as subatividades que se enquadram em cada objetivo do PESS.
 
-```{r plot-objectivo-table}
+```{r cost-objectivo-table}
 
 columns_gt_numeric <- tbl_activities_objectivo %>%
   select(where(is.numeric)) %>%
@@ -446,7 +451,7 @@ tbl_activities_objectivo %>%
   tab_options(
     table.font.names = c("Nunito Sans", "sans-serif"),
     table.align = "left",
-    table.width = pct(80)
+    table.width = pct(100)
   ) %>%
  
   # Column spanner
@@ -501,7 +506,7 @@ tbl_activities_objectivo %>%
  
   # Column widths
   cols_width(
-    objectivo_pess ~ px(300),
+    objectivo_pess ~ px(500),
     n ~ px(75),
     calc_custo_total ~ px(100),
     financiamento_oe ~ px(100),
@@ -521,10 +526,12 @@ tbl_activities_objectivo %>%
 
 ```
 
-A tabela abaixo apresenta um resumo das subactividades propostas organizadas por tipo de intervenção. Para cada tipo de subactividade, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O tipo de subactividade com o maior orçamento total proposto é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"])]`, com um custo estimado de `r scales::comma(max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O tipo com o maior número de actividades propostas é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"])]`, com `r max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE)` subactividades.
+#### Sumário por Tipo de Subactividade
+
+A tabela abaixo apresenta um resumo das subactividades propostas organizadas por tipo de intervenção. O tipo de subactividade com o maior orçamento total proposto é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"])]`, com um custo estimado de `r scales::comma(max(tbl_activities_type$calc_custo_total[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. O tipo com o maior número de actividades propostas é `r tbl_activities_type$subactividade_tipo[which.max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"])]`, com `r max(tbl_activities_type$n[tbl_activities_type$subactividade_tipo != "Total"], na.rm = TRUE)` subactividades.
 
 
-```{r plot-type-table}
+```{r cost-type-table}
 
 columns_gt_numeric <- tbl_activities_type %>%
   select(where(is.numeric)) %>%
@@ -611,6 +618,8 @@ tbl_activities_type %>%
 
 
 ```
+
+#### Sumário por Financiador
 
 Visualizar o financiamento proposto permite compreender de forma imediata como diferentes fontes estão a contribuir para a implementação das actividades planificadas no PES. A tabela abaixo apresenta o número de contribuições feitas por cada financiador (ou seja, quantas vezes essa fonte foi indicada para financiar as subactividade) e o respectivo montante total previsto. Esta informação ajuda a identificar desequilíbrios, dependências e oportunidades de reprogramação ou mobilização de fundos. Foram registadas `r sum(tbl_financiamento_financiador$n[tbl_financiamento_financiador$financiador_detalhe != "Total"], na.rm = TRUE)` contribuições de financiamento. Os três principais financiadores em termos de montante são: `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][1]`, `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][2]` e `r tbl_financiamento_financiador$financiador_detalhe[order(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], decreasing = TRUE)][3]`. A fonte com o menor volume de financiamento total até agora é `r tbl_financiamento_financiador$financiador_detalhe[which.min(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"])]`, com apenas `r scales::comma(min(tbl_financiamento_financiador$financiamento[tbl_financiamento_financiador$financiador_detalhe != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT atribuídos.
 
