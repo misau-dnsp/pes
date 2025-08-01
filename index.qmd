@@ -38,6 +38,30 @@ library(reactable)
 # PES year to summarize
 ano_pes <- "2026"
 
+# timestamp of data pull
+dt <- today()
+
+meses_pt <- c(
+  "January" = "janeiro", 
+  "February" = "fevereiro", 
+  "March" = "março",
+  "April" = "abril", 
+  "May" = "maio", 
+  "June" = "junho",
+  "July" = "julho", 
+  "August" = "agosto", 
+  "September" = "setembro",
+  "October" = "outubro", 
+  "November" = "novembro", 
+  "December" = "dezembro"
+)
+
+mes <- format(dt, "%B")
+mes_pt <- meses_pt[[mes]]
+
+data_formatada <- glue::glue("{format(dt, '%d')} de {mes_pt} de {format(dt, '%Y')}")
+
+
 # variable vector for kobo label substitution
 columns_to_label <- c("responsavel_programa", 
                       "responsavel_pf_ma", 
@@ -114,9 +138,6 @@ kobo_setup(
 ```
 
 ```{r load-kobo-data}
-
-# timestamp of data pull
-dt <- today()
 
 # acquire kobo assets
 assets <- kobo_asset_list()
@@ -251,7 +272,7 @@ val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>%
 
 ### Contextualização
 
-O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das actividades e assegurando alinhamento com as prioridades nacionais definidos no Plano Estratégico do Sector da Saúde (PESS). Para o ciclo do PES do ano `r ano_pes` os programas da DNSP tem proposto um total de `r val_n_activities` subactividades até ao dia `r format(dt, "%B %d, %Y")`. O gráfico abaixo mostra as submissões por dia inseridas na plataforma KoboToolbox, concebida para a gestão de informações PES da DNSP.
+O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das actividades e assegurando alinhamento com as prioridades nacionais definidos no Plano Estratégico do Sector da Saúde (PESS). Para o ciclo do PES do ano `r ano_pes` os programas da DNSP tem proposto um total de `r val_n_activities` subactividades até ao dia `r data_formatada`. O gráfico abaixo mostra as submissões por dia inseridas na plataforma concebida para a gestão de informações.
 
 
 ```{r submission-chronology-plot, fig.width=6.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
@@ -301,7 +322,7 @@ df_submission_chron %>%
 ### Resumo do PES `r ano_pes`
 #### Sumário por Programa
 
-A tabela abaixo apresenta um resumo das subactividades propostas organizadas por programa. Para cada programa, é indicado o número total de actividades propostas, o custo total estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo total estimado e os fundos já identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O programa com o maior número de subactividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]` com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)`. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total valor de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. 
+A tabela abaixo apresenta um resumo das subactividades propostas organizadas por programa. Para cada programa, é indicado o número de subactividades propostas, o custo estimado, bem como a distribuição das fontes de financiamento previstas — incluindo fundos do Orçamento do Estado (OE), ProSaude e outras fontes externas. A coluna final representa a lacuna de financiamento, ou seja, a diferença entre o custo estimado e os fundos identificados. A linha final da tabela agrega os totais de todas as subactividades registadas até à data, permitindo uma visão consolidada. O programa com o maior número de subactividades propostas é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"])]` com `r max(tbl_activities_programa$n[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE)`. O programa com o maior orçamento proposto é o `r tbl_activities_programa$responsavel_programa[which.max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"])]`, com um total valor de `r scales::comma(max(tbl_activities_programa$calc_custo_total[tbl_activities_programa$responsavel_programa != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT. 
 
 ```{r summary-programa-table}
 
@@ -393,7 +414,7 @@ tbl_activities_programa %>%
 
 #### Sumário por Objectivo PESS
 
-Os custos orçamentados para as subaxtividades propostas podem ser directamente associados ao objetivo do PESS ao qual respondem. Como mostra o gráfico abaixo, o objectivo PESS que recebe o maior investimento financeiro é o objectivo intitulado "`r tbl_activities_objectivo$objectivo_pess[which.max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"])]`" com um custo total alocado de `r scales::comma(max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT.
+Os custos orçamentados para as subactividades propostas podem ser directamente associados ao objetivo do PESS ao qual respondem. Como mostra o gráfico abaixo, o objectivo PESS que recebe o maior investimento financeiro é o objectivo intitulado "`r tbl_activities_objectivo$objectivo_pess[which.max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"])]`" com um custo total alocado de `r scales::comma(max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT.
 
 ```{r cost-objective-graph, fig.width=12, fig.height=3.5, fig.align='left', fig.bg="transparent"}
 
@@ -436,7 +457,7 @@ tbl_activities_objectivo %>%
 
 ```
 
-A tabela abaixo fornece detalhes sobre as fontes de financiamento e as lacunas orçamentárias para as subatividades que se enquadram em cada objetivo do PESS.
+A tabela abaixo fornece detalhes sobre as fontes de financiamento e as lacunas orçamentais para as subactividades que se enquadram em cada objetivo do PESS.
 
 ```{r cost-objectivo-table}
 
@@ -692,7 +713,8 @@ tbl_financiamento_financiador %>%
 
 ### Calendário de Execução
 
-A Unidade de Monitoria e Avaliação (UMA) da DNSP criou o diagrama de Gantt abaixo, que pode ser utilizado para compreender a coerência do conjunto de actividades propostas.  Uma vez concluído, este gráfico pode servir de base para acompanhar a execução atempada das actividades da DNSP.  Como parte da estratégia global de monitoria, a UMA pretende coordenar com os contrapartes de M&A ao nível dos programas para actualizar este gráfico em cada trimestre, a fim de mostrar o que foi concluído, está em curso, ou ainda pendente, reprogramado ou cancelado.
+O diagrama Gantt visualizado abaixo oferece uma imagem detalada sobre a calendarização de cada subactividade PES submetida pelos programas da DNSP. Essas informações podem ser úteis para a DNSP na fase de revisão e reconciliação do seu PES, com certas subactividades potencialmente sendo reprogramadas para equilibrar a carga de trabalho ao longo do ano. As informações contidas no gráfico Gantt também serão importantes para usar na monitoria da execução oportuna das subactividades aprovadas ao longo do ano referente ao Plano. Uma ferramenta complementar será criada pela Unidade de Monitoria e Avaliação (UMA) da DNSP para sistematizar a abordagem de monitoria.
+
 
 ```{r plot-activity-gantt, fig.width=12, fig.height=4, fig.align='center', fig.bg="transparent"}
 
@@ -742,7 +764,7 @@ plot_gantt
 
 ### Versões do PESOE, etc.
 
-Um histórico de versões das tabelas Excel geradas diariamente com a informação da KoboToolbox está disponível abaixo.  Cada download contém folhas separadas para o PESOE, o Plano de Formação e o Quadro de Despesas.
+Um histórico de versões das tabelas Excel geradas diariamente com a informação da plataforma está disponível abaixo.  Cada download contém folhas separadas para o PESOE, o Plano de Formação e o Quadro de Despesas.
 
 ```{r historical-download}
 # List all Excel files in the Dataout folder
