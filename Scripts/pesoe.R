@@ -186,8 +186,7 @@ mapa_objectivos_esp <- tibble::tibble(
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  #filter(name == "DNSP PES 2026 Final v3") %>%
-  filter(name == "DNSP PES 2026 Final v4") %>%
+  filter(name == "DNSP PES - Placeholder") %>%
   pull(uid) %>%
   first()
 
