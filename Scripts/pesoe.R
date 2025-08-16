@@ -1,9 +1,4 @@
 
-# PENDING ITEMS -----------------------------------------------------------
-# See if there is another way to filter all data for pes year
-# See if there is a way to avoid errors when certain tables are not present (for example when certain types of data have not been entered into kobo)
-# Have to make it so when certain tables are not present that code still works
-
 # DEPENDENCIES ---------------------------------------------------------
 
 library(ggplot2)
@@ -24,13 +19,13 @@ library(glue)
 library(openxlsx)
 library(scales)
 
+# GLOBAL VARIABLES ---------------------------------------------------------
+
 # PES year
 ano_pes <- "2026"
 
-
-# GLOBAL VARIABLES ---------------------------------------------------------
-
-
+# Kobo project
+kobo_project <- "DNSP PES"
 
 # Kobo connection
 Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
@@ -87,6 +82,18 @@ vars_pdf <- c(
   "calc_custo_total"
 )
 
+# Define the full set of expected variables
+vars_ttd <- c(
+  "_index",
+  "subactividade_local",
+  "calc_custo_viagem_ajudas",
+  "calc_sum_viagem_passagens",
+  "calc_custo_viagem_terrestre",
+  "calc_custo_contratacao_recarga",
+  "calc_custo_contratacao_evento",
+  "calc_custo_outro"
+)
+
 # Variables to take kobo label
 vars_to_label <- c("responsavel_programa", 
                    "responsavel_pf_ma", 
@@ -112,73 +119,6 @@ mapa_financiador <- c(
   "fonte_unicef" = "UNICEF"
 )
 
-# PES activity map for recoding
-# mapa_objectivos_esp <- tibble::tibble(
-#   actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:20)),
-#   label = c(
-#     "Reduzir a morbi-mortalidade através da expansão e melhoria da Qualidade dos Cuidados e Serviços de Saúde Materna",
-#     "Expandir e melhorar a Qualidade dos Cuidados e Serviços de Saúde Sexual e Reprodutiva",
-#     "Reduzir a mortalidade em crianças menores de 5 anos",
-#     "Contribuir para a redução da morbimortalidade infantil, por desnutrição",
-#     "Reduzir a prevalência e mortalidade das doenças preveníveis através de vacinas",
-#     "Aumentar o número de adultos e de crianças vivendo com HIV que beneficiam de TARV",
-#     "Reduzir a taxa de transmissão do HIV de mãe para filho",
-#     "Contribuir para a redução da incidência e da morbimortalidade por tuberculose",
-#     "Reduzir para metade a morbi-mortalidade por malária",
-#     "Reduzir o peso das DNT e mitigar o seu impacto socioeconómico",
-#     "Reduzir a prevalência das doenças tropicais negligenciadas na comunidade",
-#     "Melhorar o acesso e a qualidade dos Cuidados e Serviços de Saúde Sexual e Reprodutiva para Adolescentes e Jovens",
-#     "Contribuir para o estabelecimento de um ambiente escolar seguro, saudável e favorável à boa aprendizagem e ao desenvolvimento harmonioso do aluno",
-#     "Contribuir para a redução do peso da doença através da adopção de estilos de vida saudáveis e da redução dos comportamentos de risco para a saúde",
-#     "Prevenir e reduzir a morbilidade causada por perturbações mentais e de comportamento, doenças neuropsiquiátricas e distúrbios psicossociais, incluindo o consumo abusivo de drogas, sobretudo álcool e tabaco",
-#     "Contribuir para a redução da ocorrência/frequência de surtos/epidemias com ênfase na erradicação da Pólio e eliminação do Sarampo",
-#     "Contribuir para o fortalecimento da capacidade de gestão de emergências de saúde pública, deteção precoce e resposta atempada a eventos de saúde pública",
-#     "Contribuir para a redução da incidência e prevalência de doenças relacionadas com determinantes ambientais de saúde",
-#     "Contribuir para o bem-estar de saúde dos atletas e praticantes do exercício físico",
-#     "Estabelecer um programa de saúde da terceira idade com vista a melhorar a qualidade de vida dos idosos"
-#   )
-# )
-
-mapa_objectivos_esp <- tibble::tibble(
-  actividade_principal = paste0("objectivo_especifico_", paste0("objective_esp_", 1:34)),
-  label = c(
-    "Formar médicos especialistas, técnicos médios e especializados com qualidade",
-    "Fortalecer a formação contínua de profissionais de saúde para uma melhor oferta de cuidados",
-    "Melhorar o rácio de profissionais de regime especial através de provisão de mais profissionais de saúde qualificados",
-    "Operacionalizar o sub-sistema de saúde comunitária tendo em conta abordagem de género",
-    "Expandir e equipar unidades sanitárias com  enfoque de atenção primária",
-    "Reforçar o sistema de referência e contra referência",
-    "Reforçar as capacidades técnicas e operacionais em Água, Saneamento e Higiene (WASH) nas unidades sanitárias, incluindo a gestão de resíduos biomédicos e o fortalecimento dos laboratórios de controlo de qualidade de água e alimentos",
-    "Reforçar as capacidades de alerta precoce/vigilância, diagnóstico, intervenção e coordenação intersectorial para responder a eventos que ameaçam a saúde pública",
-    "Consolidar a implementação das acções de prevenção dos principais problemas de saúde pública do país como Malária, TB, HIV, doenças preveníveis e outras não transmissíveis",
-    "Expandir o acesso e a retenção em tratamento antirretroviral (TARV) para todas as pessoas vivendo com HIV, com enfoque na aceleração da cobertura entre adultos e crianças",
-    "Expandir a cobertura da identificação e tratamento da desnutrição aguda em crianças menores de 2 anos, com implementação do PIN",
-    "Expandir e suster programas de promoção de saúde, estilos de vida saudáveis e prevenção de doenças para reduzir a incidência de doenças",
-    "Desenvolver acções de mitigação dos principais factores de risco para a saúde,  incluindo trauma",
-    "Consolidar parcerias com a medicina tradicional e liderança comunitária",
-    "Implementar sistemas de monitoria em tempo real para identificar rapidamente surtos e tendências de doenças para preparar e responder adequadamente",
-    "Treinar continuamente a equipe de emergência em estratégias de prevenção, controlo de doenças e resposta rápida",
-    "Garantiar de Acesso Universal e Integrado a Serviços Essenciais de Saúde Sexual, Reprodutiva, Materna e Infantil",
-    "Fortalecer a qualidade assistencial e humanizada nas US",
-    "Adoptar padrões de segurança do paciente e dos profissionais",
-    "Definir e arquitectar os sistemas interoperáveis para gestão e logística de medicamentos e produtos médicos (assegurar a interoperabilidade dos sistemas de informação para a gestão, logística de medicamentos e produtos de saúde)",
-    "Fortalecer os sistemas de previsão, aquisição e distribuição (via CMAM)",
-    "Elaborar normas e regulamentos que facilitem investimentos PPP para impulsionar a produção local",
-    "Interoperar o sistema de informação para a gestão, planificação, monitoria e avaliação",
-    "Implementar os sistemas de alerta e resposta precoce, sistema integrado de vigilância e monitorização, gestão integrada de vectores",
-    "Reforcar a capacidade de diagnóstico para laboratórios de análise toxicológica",
-    "Reforçar a planificação integrada entre o Sector da Saúde e Parceiros para alinhamento das intervenções e do financiamento",
-    "Reforçar as competências sobre gestão e liderança dos gestores dos Sub -Sistemas Público e Comunitário de Saúde",
-    "Implementar tecnologias de telemedicina e/ou saúde digital para alcançar comunidades remotas",
-    "Garantir a digitalização dos processos de gestão das US",
-    "Introduzir um sistema de contabilidade analítica para a categorização detalhada dos custos por cuidados prestados",
-    "Institucionalizar as Contas Satélites de Saúde",
-    "Melhorar o rácio de profissionais de regime especial através de provisão de mais profissionais de saúde qualificados",
-    "Reforçar a capacidade técnica em gestão de Finanças Públicas no sector da saúde, fortalecendo a programação, execução e a monitoria orçamental",
-    "Introduzir o mapeamento dos fundos (externos) e rastreio das despesas (RMET)"
-  )
-)
-
 
 # LOAD KOBO ASSETS ----------------------------------------------------------
 
@@ -186,7 +126,7 @@ mapa_objectivos_esp <- tibble::tibble(
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  filter(name == "DNSP PES - Placeholder") %>%
+  filter(name == kobo_project) %>%
   pull(uid) %>%
   first()
 
@@ -200,27 +140,25 @@ rm(assets, asset_list, uid)
 # DRAW SCHEMA ------------------------------------------------------------
 
 # dm_draw(asset_df)
+# dm_draw(asset_df, view_type = "all")
 
+# schema_df <- asset_df %>%
+#   dm_get_tables() %>%
+#   imap_dfr(~ tibble(
+#     table = .y,
+#     column = names(.x),
+#     type = sapply(.x, typeof)
+#   ))
 
 # CURATE ACTIVITY & SUBACTIVITY CODES ----------------------------------------------------
 
-# Create dataframe for activity and subactivity codes
 df_codigos <- asset_df$main %>% 
   filter(ano_subactividade == ano_pes) %>% 
   select(`_index`,
          responsavel_programa,
-         starts_with("objectivo_especifico_objective")) %>% 
+         objectivo_especifico) %>% 
   mutate(across(any_of(vars_to_label), as_factor)) %>% 
-  pivot_longer(cols = !c(`_index`,
-                         responsavel_programa),
-               names_to = "actividade_principal",
-               values_to = "value") %>% 
-  mutate(actividade_principal = str_replace_all(actividade_principal, "actividade_principal", "")) %>% 
-  filter(value == 1) %>% 
-  group_by(`_index`) %>%
-  slice_head(n = 1) %>%
-  ungroup() %>% 
-  left_join(mapa_objectivos_esp, by = "actividade_principal") %>% 
+  rename(actividade_principal = objectivo_especifico) %>% 
   group_by(responsavel_programa) %>%
   mutate(
     atividade_id = dense_rank(actividade_principal),
@@ -238,50 +176,47 @@ vec_subactividades <- df_codigos %>%
   distinct(`_index`) %>% 
   pull()
 
-rm(mapa_objectivos_esp)
-
 
 # CURATE GEOTARGETS -----------------------------------------------------
 
-df_metas <- asset_df$tbl_geografia_impl %>% 
-  # Filter table for parameterized pes years
-  filter(`_parent_index` %in% vec_subactividades) %>% 
-  # Pivot geographic target table wide
-  select(`_parent_index`, geo_nome_geo_label, meta_geo) %>% 
-  mutate(
-    localizacao = str_c(geo_nome_geo_label, " (", meta_geo, ")")
-  ) %>% 
-  pivot_wider(
-    names_from = geo_nome_geo_label,
-    values_from = localizacao,
-    values_fn = list(localizacao = ~ paste(.x, collapse = ", "))
-  ) %>% 
-  select(-meta_geo) %>% 
-  # Engineer geographic targets within single cell
-  group_by(`_parent_index`) %>%
-  summarise(
-    across(
-      .cols = everything(), 
-      .fns = ~ {
-        vals <- na.omit(unique(.x))
-        if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
-      }
-    ),
-    .groups = "drop"
-  ) %>% 
-  mutate(
-    localizacao = pmap_chr(
-      select(., -`_parent_index`),
-      function(...) {
-        vals <- c(...)
-        vals <- vals[!is.na(vals)]
-        if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
-      }
-    )
-  ) %>% 
-  select(`_parent_index`,
-         localizacao)
-
+if ("tbl_geografia_impl" %in% names(asset_df)) {
+  df_metas <- asset_df$tbl_geografia_impl %>% 
+    filter(`_parent_index` %in% vec_subactividades) %>% 
+    select(`_parent_index`, geo_nome_geo_label, meta_geo) %>% 
+    mutate(
+      localizacao = str_c(geo_nome_geo_label, " (", meta_geo, ")")
+    ) %>% 
+    pivot_wider(
+      names_from = geo_nome_geo_label,
+      values_from = localizacao,
+      values_fn = list(localizacao = ~ paste(.x, collapse = ", "))
+    ) %>% 
+    select(-meta_geo) %>% 
+    group_by(`_parent_index`) %>%
+    summarise(
+      across(
+        .cols = everything(), 
+        .fns = ~ {
+          vals <- na.omit(unique(.x))
+          if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
+        }
+      ),
+      .groups = "drop"
+    ) %>% 
+    mutate(
+      localizacao = pmap_chr(
+        select(., -`_parent_index`),
+        function(...) {
+          vals <- c(...)
+          vals <- vals[!is.na(vals)]
+          if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
+        }
+      )
+    ) %>% 
+    select(`_parent_index`, localizacao)
+} else {
+  df_metas <- tibble(`_parent_index` = character(), localizacao = character())
+}
 
 # CURATE IMPL. CALENDAR/DURATION ------------------------------------------
 
@@ -410,51 +345,63 @@ rm(df_financiador_outro)
 
 # FINALIZE PESOE --------------------------------------------------------------
 
-df_pes <- asset_df$main %>%
-  filter(`_index` %in% vec_subactividades) %>% 
-  # Subset variables and convert values to labels
-  select(any_of(vars_pesoe)) %>%
-  mutate(
-    across(any_of(vars_to_label), as_factor)
-  ) %>% 
-  # Join codigos and metas
-  left_join(df_codigos) %>% 
-  left_join(df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
-  arrange(codigo_subactividade) %>% 
-  mutate(n = row_number()) %>% 
-  rowwise() %>% 
-  mutate(financiamento_total = sum(c_across(financiamento_oe:financiamento_outro_total))) %>% 
-  ungroup() %>% 
-  select(
-    `_index`,
-    n,
-    codigo_actividade,
-    actividade_principal_descricao,
-    actividade_principal_indicador,
-    actividade_principal_meta,
-    responsavel_programa,
-    codigo_subactividade,
-    subactividade_descricao,
-    subactividade_local,
-    subactividade_meta,
-    subactividade_indicador,
-    localizacao,
-    subactividade_beneficiario,
-    financiamento_total,
-    financiamento_oe,
-    financiamento_prosaude,
-    financiamento_outro_total,
-    financiamento_lacuna = calc_financiamento_lacuna
-  ) %>% 
-  # Engineer localizacao variable for international and central subactivities
-  mutate(
-    subactividade_meta = as.character(subactividade_meta),
-    localizacao = case_when(
-      subactividade_local == "Nivel Internacional" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
-      subactividade_local == "Nivel Central" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
-      TRUE ~ localizacao
+df_pes <- {
+  asset_df$main %>%
+    filter(`_index` %in% vec_subactividades) %>% 
+    # Subset variables and convert values to labels
+    select(any_of(vars_pesoe)) %>%
+    mutate(
+      across(any_of(vars_to_label), as_factor)
+    ) %>%
+    # Join codigos
+    left_join(df_codigos) %>%
+    
+    # Safe join with metas
+    {
+      if (nrow(df_metas) > 0) {
+        left_join(., df_metas, by = join_by(`_index` == `_parent_index`))
+      } else {
+        mutate(., localizacao = NA_character_)
+      }
+    } %>%
+    
+    arrange(codigo_subactividade) %>% 
+    mutate(n = row_number()) %>% 
+    rowwise() %>% 
+    mutate(financiamento_total = sum(c_across(financiamento_oe:financiamento_outro_total))) %>% 
+    ungroup() %>% 
+    select(
+      `_index`,
+      n,
+      codigo_actividade,
+      actividade_principal_descricao,
+      actividade_principal_indicador,
+      actividade_principal_meta,
+      responsavel_programa,
+      codigo_subactividade,
+      subactividade_descricao,
+      subactividade_local,
+      subactividade_meta,
+      subactividade_indicador,
+      localizacao,
+      subactividade_beneficiario,
+      financiamento_total,
+      financiamento_oe,
+      financiamento_prosaude,
+      financiamento_outro_total,
+      financiamento_lacuna = calc_financiamento_lacuna
+    ) %>% 
+    # Engineer localizacao variable for international and central subactivities
+    mutate(
+      subactividade_meta = as.character(subactividade_meta),
+      localizacao = case_when(
+        subactividade_local == "Nivel Internacional" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
+        subactividade_local == "Nivel Central" ~ str_c(subactividade_local, " (", subactividade_meta, ")"),
+        TRUE ~ localizacao
+      )
     )
-  )
+}
+
 
 output_pesoe <- df_pes %>% 
   left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
@@ -473,50 +420,71 @@ output_pesoe <- df_pes %>%
 
 # FINALIZE PDF -------------------------------------------------------------
 
-output_pdf <- asset_df$main %>%
-  filter(`_index` %in% vec_subactividades) %>% 
-  filter(subactividade_tipo == "formacao_capacitacao") %>% 
-  # Subset variables and convert values to labels
-  select(any_of(vars_pdf)) %>%
-  arrange(responsavel_programa) %>% 
-  mutate(
-    across(any_of(vars_to_label), as_factor),
-    n = row_number()
-  ) %>% 
-  left_join(df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
-  left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>% 
-  left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
-  left_join(df_financiador, by = join_by(`_index` == `_index`)) %>% 
-  select(
-    n,
-    subactividade_descricao,
-    actividade_principal_descricao,
-    formacao_modalidade,
-    responsavel_programa,
-    subactividade_beneficiario,
-    duracao_dias,
-    subactividade_meta,
-    localizacao,
-    matches("_[0-9]{2}$"),
-    calc_custo_total,
-    financiador
-  )
+output_pdf <- {
+  asset_df$main %>%
+    filter(`_index` %in% vec_subactividades) %>% 
+    filter(subactividade_tipo == "formacao_capacitacao") %>% 
+    select(any_of(vars_pdf)) %>%
+    arrange(responsavel_programa) %>% 
+    mutate(
+      across(any_of(vars_to_label), as_factor),
+      n = row_number()
+    ) %>%
+    
+    # Safe join with df_metas
+    {
+      if (nrow(df_metas) > 0) {
+        left_join(., df_metas, by = join_by(`_index` == `_parent_index`))
+      } else {
+        mutate(., localizacao = NA_character_)
+      }
+    } %>%
+    
+    # Remaining joins (assuming these tables always exist)
+    left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>% 
+    left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
+    left_join(df_financiador, by = join_by(`_index` == `_index`)) %>% 
+    
+    select(
+      n,
+      subactividade_descricao,
+      actividade_principal_descricao,
+      formacao_modalidade,
+      responsavel_programa,
+      subactividade_beneficiario,
+      duracao_dias,
+      subactividade_meta,
+      localizacao,
+      matches("_[0-9]{2}$"),
+      calc_custo_total,
+      financiador
+    )
+}
+
 
 
 # FINALIZE TTD -----------------------------------------------------------
 
-df_ttd <- asset_df$main %>% 
-  filter(`_index` %in% vec_subactividades) %>% 
-  select(c(`_index`,
-           subactividade_local,
-           calc_custo_viagem_ajudas,
-           calc_sum_viagem_passagens,
-           calc_custo_viagem_terrestre,
-           calc_custo_contratacao_recarga,
-           calc_custo_contratacao_evento,
-           calc_custo_outro)) %>% 
-  left_join(df_financiador, by = join_by(`_index` == `_index`)) %>% 
-  glimpse()
+# Create df_ttd safely
+df_ttd <- asset_df$main %>%
+  filter(`_index` %in% vec_subactividades) %>%
+  
+  # Add any missing variables as NA
+  {
+    missing_vars <- setdiff(vars_ttd, names(.))
+    if (length(missing_vars) > 0) {
+      for (var in missing_vars) {
+        .[[var]] <- NA_real_
+      }
+    }
+    .
+  } %>%
+  
+  # Select variables in expected order
+  select(all_of(vars_ttd)) %>%
+  
+  # Safe join with df_financiador
+  left_join(df_financiador, by = join_by(`_index` == `_index`))
 
 
 # functionalize this here...

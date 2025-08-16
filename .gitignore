@@ -35,3 +35,5 @@ GIS/*
 Graphics/*
 Data/*
 /.quarto/
+Dataout/
+*.xlsx
