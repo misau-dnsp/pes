@@ -1,4 +1,4 @@
-#R basics
+# R basics
 .Rproj.user
 .Rhistory
 .RData
@@ -7,7 +7,7 @@
 .DS_Store
 .quarto
 
-#no data
+# Ignore common data formats
 *.csv
 *.gz
 *.txt
@@ -29,11 +29,14 @@
 *.shp
 *.dbf
 
-#nothing from these folders
+# Ignore these project folders completely
 AI/*
 GIS/*
 Graphics/*
 Data/*
-/.quarto/
-Dataout/
-*.xlsx
+
+# Ignore all contents of Dataout except explicitly whitelisted files
+Dataout/*
+!Dataout/.gitkeep
+!Dataout/*.xlsx
+!Dataout/README.md
