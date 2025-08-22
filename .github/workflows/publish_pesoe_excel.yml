@@ -44,39 +44,53 @@ jobs:
         env:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
         run: Rscript Scripts/pesoe.R
+        
+        
+      - name: List generated outputs (debug)
+        run: |
+          echo "Repo root:"
+          ls -la
+          echo "Dataout contents:"
+          ls -la Dataout || true
+          file Dataout/*.xlsx 2>/dev/null || true
+
 
       - name: Commit and push Excel file(s)
         shell: bash
         run: |
           set -euo pipefail
-
+      
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-          # Only stage .xlsx files if any exist; never try to add the folder itself.
-          shopt -s nullglob
-          files=(Dataout/*.xlsx)
-          shopt -u nullglob
-
-          if (( ${#files[@]} )); then
-            git add -f -- "${files[@]}"
-            # Keep the directory tracked + optional docs
-            [ -f Dataout/.gitkeep ] && git add Dataout/.gitkeep || true
-            [ -f Dataout/README.md ] && git add Dataout/README.md || true
+      
+          # Debug: show what Git thinks is ignored
+          echo "::group::Ignore debug"
+          git check-ignore -v Dataout Dataout/* || true
+          echo "::endgroup::"
+      
+          # Ensure directory + keep file exist (tracked dir helps un-ignore rules)
+          mkdir -p Dataout
+          [ -f Dataout/.gitkeep ] || touch Dataout/.gitkeep
+          git add -f Dataout/.gitkeep
+      
+          # Stage only actual .xlsx files (avoid globs; handle 'no matches' safely)
+          mapfile -t xlsx < <(find Dataout -maxdepth 1 -type f -name "*.xlsx" -print)
+          if (( ${#xlsx[@]} )); then
+            git add -f -- "${xlsx[@]}"
           else
-            echo "No .xlsx files found to stage."
+            echo "No .xlsx files to stage."
           fi
-
+      
           echo "Staged files:"
           git diff --cached --name-only || true
-
+      
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-
+      
           git commit -m "ci: update Excel outputs [skip ci]"
-          # Rebase to minimize push rejects; ignore if nothing to rebase
+          # Rebase to reduce non-fast-forward errors; ignore if nothing to rebase
           git pull --rebase origin "${GITHUB_REF_NAME:-main}" || true
           git push origin HEAD:main
