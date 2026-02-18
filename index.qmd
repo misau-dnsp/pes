@@ -67,7 +67,7 @@ columns_to_label <- c("responsavel_programa",
                       "responsavel_pf_ma", 
                       "subactividade_tipo", 
                       #"objectivo_especifico", 
-                      "objectivo_pess", 
+                      "prioridade_pess", 
                       "subactividade_local")
 
 gen_tbl_activities <- function(df, breakdown = "subactividade_tipo") {
@@ -143,7 +143,7 @@ kobo_setup(
 assets <- kobo_asset_list()
 
 uid <- assets %>%
-  filter(name == "DNSP PES - Placeholder") %>%
+  filter(name == "DNSP PES Final 2025.11.02") %>%
   pull(uid) %>% first()
 
 asset <- kobo_asset(uid)
@@ -155,7 +155,7 @@ rm(assets, asset, uid)
 
 ```
 
-```{r  munge-data}
+```{r munge-data}
 
 # df main for... only activity count at present
 df_main <- asset_df$main %>%
@@ -259,7 +259,7 @@ val_n_activities <- nrow(df_main)
 # summary tables by type, program, and donor
 tbl_activities_type <- gen_tbl_activities(df_main)
 tbl_activities_programa <- gen_tbl_activities(df_main, breakdown = "responsavel_programa")
-tbl_activities_objectivo <- gen_tbl_activities(df_main, breakdown = "objectivo_pess")
+tbl_activities_objectivo <- gen_tbl_activities(df_main, breakdown = "prioridade_pess")
 tbl_financiamento_financiador <- gen_tbl_financiador(df_main_financ)
 
 
@@ -275,7 +275,12 @@ val_cost_activities <- sum(df_main$calc_custo_total, na.rm = TRUE) %>%
 O Plano Económico e Social (PES) do Ministério da Saúde é o principal instrumento anual de operacionalização das prioridades do sector da saúde em Moçambique. Através do PES, transformam-se políticas e estratégias nacionais em actividades concretas, calendarizadas, orçamentadas e atribuídas a responsáveis claros. A Direcção Nacional de Saúde Pública (DNSP) desempenha um papel central no PES, coordenando o planeamento das actividades e assegurando alinhamento com as prioridades nacionais definidos no Plano Estratégico do Sector da Saúde (PESS). Para o ciclo do PES do ano `r ano_pes` os programas da DNSP tem proposto um total de `r val_n_activities` subactividades até ao dia `r data_formatada`. O gráfico abaixo mostra as submissões por dia inseridas na plataforma concebida para a gestão de informações.
 
 
-```{r submission-chronology-plot, fig.width=6.5, fig.height=3.5, fig.align='left', fig.bg="transparent"}
+```{r submission-chronology-plot}
+#| fig-width: 8
+#| fig-height: 3.5
+#| out-width: "100%"
+#| fig-align: left
+#| fig-bg: "transparent"
 
 df_submission_chron <- asset_df$main %>%
   filter(`_index` %in% vec_subactividades) %>% 
@@ -304,6 +309,7 @@ df_submission_chron %>%
     color = "Programa"
   ) +
   theme_minimal(base_size = 13) +
+  scale_y_continuous(breaks = seq(0, 100, by = 10)) +  
   theme(
     panel.background = element_rect(fill = NA, color = NA),
     plot.background = element_rect(fill = NA, color = NA),
@@ -414,21 +420,26 @@ tbl_activities_programa %>%
 
 #### Sumário por Objectivo PESS
 
-Os custos orçamentados para as subactividades propostas podem ser directamente associados ao objetivo do PESS ao qual respondem. Como mostra o gráfico abaixo, o objectivo PESS que recebe o maior investimento financeiro é o objectivo intitulado "`r tbl_activities_objectivo$objectivo_pess[which.max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"])]`" com um custo total alocado de `r scales::comma(max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$objectivo_pess != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT.
+Os custos orçamentados para as subactividades propostas podem ser directamente associados ao objetivo do PESS ao qual respondem. Como mostra o gráfico abaixo, o objectivo PESS que recebe o maior investimento financeiro é o objectivo intitulado "`r tbl_activities_objectivo$prioridade_pess[which.max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$prioridade_pess != "Total"])]`" com um custo total alocado de `r scales::comma(max(tbl_activities_objectivo$calc_custo_total[tbl_activities_objectivo$prioridade_pess != "Total"], na.rm = TRUE), big.mark = ".", decimal.mark = ",")` MT.
 
-```{r cost-objective-graph, fig.width=12, fig.height=3.5, fig.align='left', fig.bg="transparent"}
+```{r cost-objective-graph}
+#| fig-width: 11
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-align: left
+#| fig-bg: "transparent"
 
 columns_gt_numeric <- tbl_activities_objectivo %>%
   select(where(is.numeric)) %>%
   colnames()
 
 tbl_activities_objectivo %>% 
-  filter(objectivo_pess != "Total") %>% 
+  filter(prioridade_pess != "Total") %>% 
   mutate(
-    objectivo_pess = str_wrap(objectivo_pess, width = 65),  # wrap after n characters
-    objectivo_pess = fct_reorder(objectivo_pess, calc_custo_total)
+    prioridade_pess = str_wrap(prioridade_pess, width = 65),  # wrap after n characters
+    prioridade_pess = fct_reorder(prioridade_pess, calc_custo_total)
   ) %>% 
-  ggplot(aes(calc_custo_total, objectivo_pess)) +
+  ggplot(aes(calc_custo_total, prioridade_pess)) +
   geom_col(fill = "#2780e3") +
   geom_text(
     aes(label = comma(calc_custo_total)),
@@ -495,7 +506,7 @@ tbl_activities_objectivo %>%
  
   tab_style(
     style = cell_text(size = px(13), weight = "bold", align = "left"),
-    locations = cells_column_labels(columns = objectivo_pess)
+    locations = cells_column_labels(columns = prioridade_pess)
   ) %>%
  
   # Body styles
@@ -506,17 +517,17 @@ tbl_activities_objectivo %>%
  
   tab_style(
     style = cell_text(size = px(13), align = "left"),
-    locations = cells_body(columns = objectivo_pess)
+    locations = cells_body(columns = prioridade_pess)
   ) %>%
  
     tab_style(
     style = cell_text(weight = "bold"),
-    locations = cells_body(rows = objectivo_pess == "Total")
+    locations = cells_body(rows = prioridade_pess == "Total")
   ) %>%
 
   # Column names
   cols_label(
-    objectivo_pess = "Objectivo PESS",
+    prioridade_pess = "Objectivo PESS",
     n = "Qd.",
     calc_custo_total = "Custo",
     financiamento_oe = "OE",
@@ -527,7 +538,7 @@ tbl_activities_objectivo %>%
  
   # Column widths
   cols_width(
-    objectivo_pess ~ px(500),
+    prioridade_pess ~ px(500),
     n ~ px(75),
     calc_custo_total ~ px(100),
     financiamento_oe ~ px(100),
@@ -716,7 +727,12 @@ tbl_financiamento_financiador %>%
 O diagrama Gantt visualizado abaixo oferece uma imagem detalada sobre a calendarização de cada subactividade PES submetida pelos programas da DNSP. Essas informações podem ser úteis para a DNSP na fase de revisão e reconciliação do seu PES, com certas subactividades potencialmente sendo reprogramadas para equilibrar a carga de trabalho ao longo do ano. As informações contidas no gráfico Gantt também serão importantes para usar na monitoria da execução oportuna das subactividades aprovadas ao longo do ano referente ao Plano. Uma ferramenta complementar será criada pela Unidade de Monitoria e Avaliação (UMA) da DNSP para sistematizar a abordagem de monitoria.
 
 
-```{r plot-activity-gantt, fig.width=12, fig.height=4, fig.align='center', fig.bg="transparent"}
+```{r plot-activity-gantt}
+#| fig-width: 10
+#| fig-height: 50
+#| out-width: "100%"
+#| fig-align: left
+#| fig-bg: "transparent"
 
 # plot activity gantt chart
 plot_gantt <- ggplot(df_main_dates) +
@@ -753,7 +769,7 @@ plot_gantt <- ggplot(df_main_dates) +
     plot.caption = element_text(margin = margin(t = 10), size = 12, hjust = 1, face = "italic"),
     legend.position = "right",
     axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
-    axis.text.y = element_text(size = 12)
+    axis.text.y = element_text(size = 9)
   )
 
 plot_gantt

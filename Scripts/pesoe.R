@@ -1,4 +1,3 @@
-
 # DEPENDENCIES ---------------------------------------------------------
 
 library(ggplot2)
@@ -25,7 +24,7 @@ library(scales)
 ano_pes <- "2026"
 
 # Kobo project
-kobo_project <- "DNSP PES"
+kobo_project <- "DNSP PES Final 2025.11.02"
 
 # Kobo connection
 Sys.setenv(KOBOTOOLBOX_URL = "https://eu.kobotoolbox.org")
@@ -42,37 +41,76 @@ dt_formatted_info <- format(dt, "%d/%m/%Y %H:%M")
 dt_formatted_filename <- format(dt, "%Y-%m-%d")
 filename_output <- paste0("Dataout/dnsp_pes_", dt_formatted_filename, ".xlsx") # not used, consider removing
 
-# Variables required for PESOE
+# Variables required for PESOE (new)
 vars_pesoe <- c(
   "_index",
   "responsavel_programa",
-  "objectivo_pess", 
-  "actividade_principal_descricao",
-  "actividade_principal_indicador",
-  "actividade_principal_meta",
-  "subactividade_tipo",
-  "subactividade_tipo_outro_espec",
+  "accao_estrategica_descricao",
+  "accao_estrategica_indicador",
+  "accao_estrategica_meta",
+  "actividade_prioridade",
   "subactividade_descricao",
-  "subactividade_beneficiario",
+  "responsavel_programa",
+  "subactividade_tipo",
   "subactividade_indicador",
   "subactividade_meta",
+  "subactividade_meta_tri_1",
+  "subactividade_meta_tri_2",
+  "subactividade_meta_tri_3",
+  "subactividade_meta_tri_4",
   "subactividade_local",
-  "subactividade_local_inter_deta",
-  "subactividade_local_reg_detalh",
-  "subactividade_local_prov_detal",
+  "subactividade_beneficiario",
+  #Valor total em 10^3MT,
+  #Valor total (em extenso),
   "financiamento_oe",
+  "financiamento_fundo_global",
+  "financiamento_banco_mundial",
   "financiamento_prosaude",
-  "financiamento_outro_total",
-  "calc_financiamento_lacuna"
+  "financiamento_outro_total", # new change to '_total'. Needs checking.
+  "calc_financiamento",
+  "calc_financiamento_lacuna",
+  #Implementation calendar,
+  #Detalhes de orçamento de outras fontes,
+  "observacao",
+  "subactividade_tipo_outro_espec", # not in sequenced template
+  "subactividade_local_inter_deta",  # not in sequenced template
+  "subactividade_local_reg_detalh",  # not in sequenced template
+  "subactividade_local_prov_detal"  # not in sequenced template
 )
+
+
+# Variables required for PESOE
+# vars_pesoe <- c(
+#   "_index",
+#   "responsavel_programa",
+#   "objectivo_pess",
+#   "actividade_principal_descricao",
+#   "actividade_principal_indicador",
+#   "actividade_principal_meta",
+#   "subactividade_tipo",
+#   "subactividade_tipo_outro_espec",
+#   "subactividade_descricao",
+#   "subactividade_beneficiario",
+#   "subactividade_indicador",
+#   "subactividade_meta",
+#   "subactividade_local",
+#   "subactividade_local_inter_deta",
+#   "subactividade_local_reg_detalh",
+#   "subactividade_local_prov_detal",
+#   "financiamento_oe",
+#   "financiamento_prosaude",
+#   "financiamento_outro_total",
+#   "calc_financiamento_lacuna"
+# )
 
 # Variables required for Plano de Formação
 vars_pdf <- c(
   "_index",
   "responsavel_programa",
   "subactividade_descricao",
-  "actividade_principal_descricao",
-  "formacao_modalidade",
+  "subactividade_modalidade",
+  #"actividade_principal_descricao",
+  "actividade_prioridade",
   "subactividade_beneficiario",
   "subactividade_meta",
   "subactividade_local",
@@ -95,25 +133,22 @@ vars_ttd <- c(
 )
 
 # Variables to take kobo label
-vars_to_label <- c("responsavel_programa", 
-                   "responsavel_pf_ma", 
-                   "subactividade_tipo", 
-                   "formacao_modalidade",
-                   "objectivo_especifico", 
-                   "objectivo_pess", 
+vars_to_label <- c("responsavel_programa",
+                   "responsavel_pf_ma",
+                   "actividade_prioridade",
+                   "subactividade_tipo",
+                   "subactividade_modalidade",
                    "subactividade_local")
 
 # Financing source map for renaming
 mapa_financiador <- c(
-  "fonte_banco_mundial" = "Banco Mundial",
   "fonte_cdc" = "CDC/COAG",
   "fonte_fdc" = "FDC",
   "fonte_fnuap" = "FNUAP",
-  "fonte_fundo_global" = "Fundo Global",
   "fonte_gavi" = "GAVI",
   "fonte_oim" = "OIM",
   "fonte_oms" = "OMS",
-  "fonte_pepfar_1" = "PEPFAR",
+  "fonte_pepfar" = "PEPFAR",
   "fonte_prosaude" = "ProSaude",
   "fonte_rti" = "RTI",
   "fonte_unicef" = "UNICEF"
@@ -152,57 +187,57 @@ rm(assets, asset_list, uid)
 
 # CURATE ACTIVITY & SUBACTIVITY CODES ----------------------------------------------------
 
-df_codigos <- asset_df$main %>% 
-  filter(ano_subactividade == ano_pes) %>% 
+df_codigos <- asset_df$main %>%
+  filter(ano_subactividade == ano_pes) %>%
   select(`_index`,
          responsavel_programa,
-         objectivo_especifico) %>% 
-  mutate(across(any_of(vars_to_label), as_factor)) %>% 
-  rename(actividade_principal = objectivo_especifico) %>% 
+         accao_estrategica_descricao) %>%
+  mutate(across(any_of(vars_to_label), as_factor)) %>%
   group_by(responsavel_programa) %>%
   mutate(
-    atividade_id = dense_rank(actividade_principal),
-    codigo_actividade = paste0("DNSP-", responsavel_programa, "-A", atividade_id)
+    actividade_id = dense_rank(accao_estrategica_descricao),
+    codigo_actividade = paste0("DNSP-", responsavel_programa, "-A", actividade_id)
   ) %>%
-  ungroup() %>% 
-  group_by(responsavel_programa, actividade_principal) %>%
+  ungroup() %>%
+  group_by(responsavel_programa, accao_estrategica_descricao) %>%
   mutate(codigo_subactividade = paste0(codigo_actividade, ".", row_number())) %>%
-  ungroup() %>% 
+  ungroup() %>%
   select('_index',
          codigo_actividade,
          codigo_subactividade)
 
-vec_subactividades <- df_codigos %>% 
-  distinct(`_index`) %>% 
+# Create vector of activities to be included in other PES outputs
+vec_subactividades <- df_codigos %>%
+  distinct(`_index`) %>%
   pull()
 
 
 # CURATE GEOTARGETS -----------------------------------------------------
 
 if ("tbl_geografia_impl" %in% names(asset_df)) {
-  df_metas <- asset_df$tbl_geografia_impl %>% 
-    filter(`_parent_index` %in% vec_subactividades) %>% 
-    select(`_parent_index`, geo_nome_geo_label, meta_geo) %>% 
+  df_metas <- asset_df$tbl_geografia_impl %>%
+    filter(`_parent_index` %in% vec_subactividades) %>%
+    select(`_parent_index`, geo_nome_geo_label, meta_geo) %>%
     mutate(
       localizacao = str_c(geo_nome_geo_label, " (", meta_geo, ")")
-    ) %>% 
+    ) %>%
     pivot_wider(
       names_from = geo_nome_geo_label,
       values_from = localizacao,
       values_fn = list(localizacao = ~ paste(.x, collapse = ", "))
-    ) %>% 
-    select(-meta_geo) %>% 
+    ) %>%
+    select(-meta_geo) %>%
     group_by(`_parent_index`) %>%
     summarise(
       across(
-        .cols = everything(), 
+        .cols = everything(),
         .fns = ~ {
           vals <- na.omit(unique(.x))
           if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
         }
       ),
       .groups = "drop"
-    ) %>% 
+    ) %>%
     mutate(
       localizacao = pmap_chr(
         select(., -`_parent_index`),
@@ -212,7 +247,7 @@ if ("tbl_geografia_impl" %in% names(asset_df)) {
           if (length(vals) == 0) NA_character_ else paste(vals, collapse = ", ")
         }
       )
-    ) %>% 
+    ) %>%
     select(`_parent_index`, localizacao)
 } else {
   df_metas <- tibble(`_parent_index` = character(), localizacao = character())
@@ -238,7 +273,7 @@ month_week_levels <- full_year$month_week
 # Identify calendar weeks where subactivity occurs
 df_calendar_long <- asset_df$tbl_datas_impl %>%
   # Filter table for parameterized pes years
-  filter(`_parent_index` %in% vec_subactividades) %>% 
+  filter(`_parent_index` %in% vec_subactividades) %>%
   select(`_parent_index`, subactividade_data_inicio, subactividade_data_fim) %>%
   rowwise() %>%
   mutate(dates = list(seq(subactividade_data_inicio, subactividade_data_fim, by = "1 day"))) %>%
@@ -254,7 +289,7 @@ df_calendar_long <- asset_df$tbl_datas_impl %>%
 
 # Extract unique parent indexes from kobo data
 parent_ids <- asset_df$tbl_datas_impl %>%
-  filter(`_parent_index` %in% vec_subactividades) %>% 
+  filter(`_parent_index` %in% vec_subactividades) %>%
   distinct(`_parent_index`) %>%
   pull()
 
@@ -276,10 +311,10 @@ df_calendario <- full_grid %>%
 
 # Create subactivity duration used in PdF
 df_calendar_duracao <- asset_df$tbl_datas_impl %>%
-  filter(`_parent_index` %in% vec_subactividades) %>% 
-  mutate(duracao_dias = interval(ymd(subactividade_data_inicio), ymd(subactividade_data_fim)) %/% days(1)) %>% 
-  select(`_parent_index`, duracao_dias) %>% 
-  group_by(`_parent_index`) %>% 
+  filter(`_parent_index` %in% vec_subactividades) %>%
+  mutate(duracao_dias = interval(ymd(subactividade_data_inicio), ymd(subactividade_data_fim)) %/% days(1)) %>%
+  select(`_parent_index`, duracao_dias) %>%
+  group_by(`_parent_index`) %>%
   summarize(duracao_dias = sum(duracao_dias, na.rm = TRUE), .groups = "drop")
 
 rm(full_year, month_week_levels, df_calendar_long, full_grid, parent_ids)
@@ -287,8 +322,8 @@ rm(full_year, month_week_levels, df_calendar_long, full_grid, parent_ids)
 
 # CURATE FINANCIADOR ---------------------------------------------
 
-df_financiador_outro <- asset_df$tbl_financiamento_outro %>% 
-  filter(`_parent_index` %in% vec_subactividades) %>% 
+df_financiador_outro <- asset_df$tbl_financiamento_outro %>%
+  filter(`_parent_index` %in% vec_subactividades) %>%
   mutate(
     financiador = pmap_chr(
       list(financiamento_outro_especificacao, financiamento_outro_especificacao_),
@@ -315,26 +350,28 @@ df_financiador_outro <- asset_df$tbl_financiamento_outro %>%
   )
 
 df_financiador <- asset_df$main %>%
-  filter(`_index` %in% vec_subactividades) %>% 
+  filter(`_index` %in% vec_subactividades) %>%
   # Subset variables and convert values to labels
   mutate(
     across(any_of(vars_to_label), as_factor),
     n = row_number(),
     financiamento_oe = if_else(financiamento_oe == "0", NA_character_, "OE"),
+    financiamento_fundo_global = if_else(financiamento_fundo_global == "0", NA_character_, "Fundo Global"),
+    financiamento_banco_mundial = if_else(financiamento_banco_mundial == "0", NA_character_, "Banco Mundial"),
     financiamento_prosaude = if_else(financiamento_prosaude == "0", NA_character_, "ProSaude")
-  ) %>% 
-  left_join(df_financiador_outro, by = join_by(`_index` == `_parent_index`)) %>% 
+  ) %>%
+  left_join(df_financiador_outro, by = join_by(`_index` == `_parent_index`)) %>%
   mutate(
     financiador = pmap_chr(
-      list(financiador, financiamento_oe, financiamento_prosaude),
-      function(f, oe, prosaude) {
-        parts <- c(f, oe, prosaude)
+      list(financiador, financiamento_oe, financiamento_fundo_global, financiamento_banco_mundial, financiamento_prosaude),
+      function(f, oe, fundo_global, banco_mundial, prosaude) {
+        parts <- c(f, oe, fundo_global, banco_mundial, prosaude)
         parts <- parts[!is.na(parts) & parts != ""]
         if (length(parts) == 0) NA_character_ else paste(parts, collapse = ", ")
       }
     ),
     n_financiador = str_count(financiador, ",") + 1
-  ) %>% 
+  ) %>%
   select(
     `_index`,
     financiador,
@@ -347,7 +384,7 @@ rm(df_financiador_outro)
 
 df_pes <- {
   asset_df$main %>%
-    filter(`_index` %in% vec_subactividades) %>% 
+    filter(`_index` %in% vec_subactividades) %>%
     # Subset variables and convert values to labels
     select(any_of(vars_pesoe)) %>%
     mutate(
@@ -355,6 +392,9 @@ df_pes <- {
     ) %>%
     # Join codigos
     left_join(df_codigos) %>%
+    
+    # Join financiador
+    left_join(df_financiador) %>%
     
     # Safe join with metas
     {
@@ -365,32 +405,42 @@ df_pes <- {
       }
     } %>%
     
-    arrange(codigo_subactividade) %>% 
-    mutate(n = row_number()) %>% 
-    rowwise() %>% 
-    mutate(financiamento_total = sum(c_across(financiamento_oe:financiamento_outro_total))) %>% 
-    ungroup() %>% 
+    arrange(codigo_subactividade) %>%
+    mutate(n = row_number()) %>%
+    rowwise() %>%
+    mutate(financiamento_total = sum(c_across(financiamento_oe:financiamento_outro_total))) %>%
+    ungroup() %>%
     select(
       `_index`,
       n,
       codigo_actividade,
-      actividade_principal_descricao,
-      actividade_principal_indicador,
-      actividade_principal_meta,
-      responsavel_programa,
+      accao_estrategica_descricao,
+      accao_estrategica_indicador,
+      accao_estrategica_meta,
+      actividade_prioridade,
       codigo_subactividade,
       subactividade_descricao,
-      subactividade_local,
-      subactividade_meta,
+      responsavel_programa,
+      subactividade_tipo,
       subactividade_indicador,
+      subactividade_meta,
+      subactividade_meta_tri_1,
+      subactividade_meta_tri_2,
+      subactividade_meta_tri_3,
+      subactividade_meta_tri_4,
+      subactividade_local,
       localizacao,
       subactividade_beneficiario,
       financiamento_total,
       financiamento_oe,
+      financiamento_fundo_global,
+      financiamento_banco_mundial,
       financiamento_prosaude,
       financiamento_outro_total,
-      financiamento_lacuna = calc_financiamento_lacuna
-    ) %>% 
+      financiamento_lacuna = calc_financiamento_lacuna,
+      financiador,
+      observacao
+    ) %>%
     # Engineer localizacao variable for international and central subactivities
     mutate(
       subactividade_meta = as.character(subactividade_meta),
@@ -402,14 +452,15 @@ df_pes <- {
     )
 }
 
-
-output_pesoe <- df_pes %>% 
-  left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
-  select(-c(`_index`, subactividade_local)) %>% 
+output_pesoe <- df_pes %>%
+  left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>%
+  relocate(c(financiador, observacao), .after = everything()) %>%
+  select(-c(`_index`, subactividade_local)) %>%
   # Format numbers
   mutate(
     across(
-      c(financiamento_total, financiamento_oe, financiamento_prosaude,
+      c(financiamento_total, financiamento_oe, financiamento_fundo_global,
+        financiamento_banco_mundial, financiamento_prosaude,
         financiamento_outro_total, financiamento_lacuna),
       ~ number(as.numeric(.x), big.mark = ",", decimal.mark = ".", accuracy = 0.01)
     ),
@@ -417,15 +468,75 @@ output_pesoe <- df_pes %>%
   )
 
 
-
 # FINALIZE PDF -------------------------------------------------------------
+
+ts <- asset_df$main %>% 
+  filter(`_index` %in% vec_subactividades) %>%
+  filter(subactividade_tipo == "tipo_formacao") %>%
+  select(any_of(vars_pdf)) %>%
+  arrange(responsavel_programa) %>%
+  mutate(
+    across(any_of(vars_to_label), as_factor),
+    n = row_number()
+  )
+
+
+
+
+output_pdf <- 
+  asset_df$main %>%
+    filter(`_index` %in% vec_subactividades) %>%
+    filter(subactividade_tipo == "tipo_formacao") %>%
+    select(any_of(vars_pdf)) %>%
+    arrange(responsavel_programa) %>%
+    mutate(
+      across(any_of(vars_to_label), as_factor),
+      n = row_number()
+    ) %>%
+    left_join(., df_metas, by = join_by(`_index` == `_parent_index`)) %>% 
+    
+    # Remaining joins (assuming these tables always exist)
+    left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>%
+    left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>%
+    left_join(df_financiador, by = join_by(`_index` == `_index`)) %>%
+    
+    select(
+      n,
+      subactividade_descricao,
+      #actividade_principal_descricao,
+      subactividade_modalidade,
+      responsavel_programa,
+      subactividade_beneficiario,
+      duracao_dias,
+      subactividade_meta,
+      localizacao,
+      matches("_[0-9]{2}$"),
+      calc_custo_total,
+      financiador
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 output_pdf <- {
   asset_df$main %>%
-    filter(`_index` %in% vec_subactividades) %>% 
-    filter(subactividade_tipo == "formacao_capacitacao") %>% 
+    filter(`_index` %in% vec_subactividades) %>%
+    filter(subactividade_tipo == "formacao_capacitacao") %>%
     select(any_of(vars_pdf)) %>%
-    arrange(responsavel_programa) %>% 
+    arrange(responsavel_programa) %>%
     mutate(
       across(any_of(vars_to_label), as_factor),
       n = row_number()
@@ -441,15 +552,15 @@ output_pdf <- {
     } %>%
     
     # Remaining joins (assuming these tables always exist)
-    left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>% 
-    left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>% 
-    left_join(df_financiador, by = join_by(`_index` == `_index`)) %>% 
+    left_join(df_calendar_duracao, by = join_by(`_index` == `_parent_index`)) %>%
+    left_join(df_calendario, by = join_by(`_index` == `_parent_index`)) %>%
+    left_join(df_financiador, by = join_by(`_index` == `_index`)) %>%
     
     select(
       n,
       subactividade_descricao,
-      actividade_principal_descricao,
-      formacao_modalidade,
+      #actividade_principal_descricao,
+      subactividade_modalidade,
       responsavel_programa,
       subactividade_beneficiario,
       duracao_dias,
@@ -688,21 +799,22 @@ if ("calc_custo_viagem_ajudas" %in% names(df_ttd)) {
     )
 }
 
-df_ttd <- df_ttd %>% 
+df_ttd <- df_ttd %>%
   select(
     `_index`,
     starts_with("ttd_"),
     n_financiador,
     financiador
   )
-  
-output_ttd <- df_pes %>% 
+
+output_ttd <- df_pes %>%
   select(`_index`,
          n,
          codigo_actividade,
-         actividade_principal_descricao,
-         actividade_principal_indicador,
-         actividade_principal_meta,
+         subactividade_descricao,
+         #actividade_principal_descricao,
+         accao_estrategica_indicador,
+         accao_estrategica_meta,
          responsavel_programa,
          codigo_subactividade,
          subactividade_descricao,
@@ -715,7 +827,7 @@ output_ttd <- df_pes %>%
          financiamento_prosaude,
          financiamento_outro_total,
          financiamento_lacuna
-         ) %>% 
+  ) %>%
   left_join(df_ttd, by = join_by(`_index` == `_index`)) %>%
   relocate(contains('financiador'), .after = n)
 
@@ -738,52 +850,52 @@ writeData(
 )
 
 writeData(
-  wb, 
-  sheet = "Info", 
-  x = "Acções necessárias após a criação do Excel", 
-  startCol = 1, 
+  wb,
+  sheet = "Info",
+  x = "Acções necessárias após a criação do Excel",
+  startCol = 1,
   startRow = 3
-  )
+)
 
 writeData(
-  wb, 
-  sheet = "Info", 
-  x = "Para as subactividades com mais de um financiador, distribuir as despesas por fonte na folha TTD (usar coluna “n_financiador” para detectar estes casos)", 
-  startCol = 1, 
+  wb,
+  sheet = "Info",
+  x = "Para as subactividades com mais de um financiador, distribuir as despesas por fonte na folha TTD (usar coluna “n_financiador” para detectar estes casos)",
+  startCol = 1,
   startRow = 4
-  )
+)
 
 writeData(
-  wb, 
-  sheet = "Info", 
-  x = "Após a elaboração da proposta final de Excel, distribuir para revisão e correcções", 
-  startCol = 1, 
+  wb,
+  sheet = "Info",
+  x = "Após a elaboração da proposta final de Excel, distribuir para revisão e correcções",
+  startCol = 1,
   startRow = 5
-  )
+)
 
 writeData(
-  wb, 
-  sheet = "PDF", 
-  x = output_pdf, 
-  startCol = 1, 
+  wb,
+  sheet = "PDF",
+  x = output_pdf,
+  startCol = 1,
   startRow = 1
-  )
+)
 
 writeData(
-  wb, 
-  sheet = "TTD", 
-  x = output_ttd, 
-  startCol = 1, 
+  wb,
+  sheet = "TTD",
+  x = output_ttd,
+  startCol = 1,
   startRow = 1
-  )
+)
 
 writeData(
-  wb, 
-  sheet = "PESOE", 
-  x = output_pesoe, 
-  startCol = 1, 
+  wb,
+  sheet = "PESOE",
+  x = output_pesoe,
+  startCol = 1,
   startRow = 1
-  )
+)
 
 # customize column widths
 setColWidths(
@@ -862,8 +974,8 @@ addStyle(
 )
 
 addStyle(
-  wb, 
-  sheet = "PESOE", 
+  wb,
+  sheet = "PESOE",
   style = style_text_centered,
   rows = 1:(nrow(output_pesoe) + 1),  # +1 to include header
   cols = 1,                           # Column 2 = "n"
@@ -871,8 +983,8 @@ addStyle(
 )
 
 addStyle(
-  wb, 
-  sheet = "PDF", 
+  wb,
+  sheet = "PDF",
   style = style_text_centered,
   rows = 1:(nrow(output_pdf) + 1),  # +1 to include header
   cols = 1,                           # Column 2 = "n"
@@ -880,8 +992,8 @@ addStyle(
 )
 
 addStyle(
-  wb, 
-  sheet = "PESOE", 
+  wb,
+  sheet = "PESOE",
   style = style_text_wrap,
   rows = 1:(nrow(output_pesoe) + 1),  # Includes header row
   cols = c(2, 4),
@@ -903,14 +1015,14 @@ apply_calendar_style <- function(wb, sheet, data) {
 }
 
 apply_calendar_style(
-  wb, 
-  "PESOE", 
+  wb,
+  "PESOE",
   output_pesoe
 )
 
 apply_calendar_style(
-  wb, 
-  "PDF", 
+  wb,
+  "PDF",
   output_pdf
 )
 

@@ -40,3 +40,6 @@ Dataout/*
 !Dataout/.gitkeep
 !Dataout/*.xlsx
 !Dataout/README.md
+/.quarto/
+
+**/*.quarto_ipynb
